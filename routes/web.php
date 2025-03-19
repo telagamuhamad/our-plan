@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\MeetingController;
+use App\Http\Controllers\SavingController;
+use App\Http\Controllers\SavingTransactionController;
 use App\Http\Controllers\TravelController;
 use Illuminate\Support\Facades\Route;
 
@@ -52,5 +54,18 @@ Route::middleware(['auth'])->group(function () {
         Route::post('assign-to-meeting/{meetingId}', [TravelController::class, 'assignToMeeting'])->name('travels.assign-to-meeting');
         Route::patch('complete-travel/{travelId}', [TravelController::class, 'completeTravel'])->name('travels.complete-travel');
         Route::patch('remove-from-meeting/{travelId}', [TravelController::class, 'removeFromMeeting'])->name('travels.remove-from-meeting');
+    });
+
+    Route::prefix('savings')->group(function () {
+        Route::get('index', [SavingController::class, 'index'])->name('savings.index');
+        Route::get('create', [SavingController::class, 'create'])->name('savings.create');
+        Route::post('store', [SavingController::class, 'store'])->name('savings.store');
+        Route::get('show/{savingId}', [SavingController::class, 'show'])->name('savings.show');
+        Route::get('edit/{savingId}', [SavingController::class, 'edit'])->name('savings.edit');
+        Route::put('update/{savingId}', [SavingController::class, 'update'])->name('savings.update');
+        Route::delete('destroy/{savingId}', [SavingController::class, 'destroy'])->name('savings.destroy');
+        Route::post('{savingId}/transactions', [SavingTransactionController::class, 'store'])->name('savings.transactions.store');
+        Route::get('/transfer', [SavingController::class, 'showTransferForm'])->name('savings.transfer.form');
+        Route::post('/transfer', [SavingController::class, 'transfer'])->name('savings.transfer');
     });
 });

@@ -17,11 +17,17 @@ class Saving extends Model
         'name',
         'target_amount',
         'current_amount',
+        'is_shared',
     ];
 
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function transactions()
+    {
+        return $this->hasMany(SavingTransaction::class);
     }
 
     public function getProgressAttribute()

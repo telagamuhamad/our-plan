@@ -35,7 +35,7 @@
                 <div class="card-body text-center">
                     <h5 class="card-title">Savings Tracker 💰</h5>
                     <p class="card-text">Pantau tabungan bersama.</p>
-                    <a href="#" class="btn btn-primary">Lihat Tracker</a>
+                    <a href="{{  route('savings.index') }}" class="btn btn-primary">Lihat Tracker</a>
                 </div>
             </div>
         </div>
