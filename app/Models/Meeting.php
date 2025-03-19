@@ -17,11 +17,18 @@ class Meeting extends Model
         'is_departure_transport_ready',
         'is_return_transport_ready',
         'is_rest_place_ready',
-        'note'
+        'note',
+        'start_date',
+        'end_date'
     ];
 
     public function user()
     {
         return $this->belongsTo(User::class, 'travelling_user_id');
+    }
+
+    public function travel()
+    {
+        return $this->hasMany(Travel::class, 'meeting_id');
     }
 }

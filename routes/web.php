@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\MeetingController;
+use App\Http\Controllers\TravelController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -36,5 +37,16 @@ Route::middleware(['auth'])->group(function () {
         Route::get('edit/{meetingId}', [MeetingController::class, 'edit'])->name('meetings.edit');
         Route::put('update/{meetingId}', [MeetingController::class, 'update'])->name('meetings.update');
         Route::delete('destroy/{meetingId}', [MeetingController::class, 'destroy'])->name('meetings.destroy');
+    });
+
+    // Travels
+    Route::prefix('travels')->group(function () {
+        Route::get('index', [TravelController::class, 'index'])->name('travels.index');
+        Route::get('show/{travelId}', [TravelController::class, 'show'])->name('travels.show');
+        Route::get('create', [TravelController::class, 'create'])->name('travels.create');
+        Route::post('store', [TravelController::class, 'store'])->name('travels.store');
+        Route::get('edit/{travelId}', [TravelController::class, 'edit'])->name('travels.edit');
+        Route::put('update/{travelId}', [TravelController::class, 'update'])->name('travels.update');
+        Route::delete('destroy/{travelId}', [TravelController::class, 'destroy'])->name('travels.destroy');
     });
 });

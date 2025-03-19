@@ -20,6 +20,7 @@
                 <th class="text-center">Lokasi</th>
                 <th class="text-center">Persiapan</th>
                 <th class="text-center">Catatan</th>
+                <th class="text-center">Plan</th>
                 <th class="text-center">Aksi</th>
             </tr>
         </thead>
@@ -48,6 +49,9 @@
                     @endif
                 </td>
                 <td>{{ $meeting->note ?? '-' }}</td>
+                <td>
+                    <a href="{{ route('travels.create', $meeting->id) }}" class="btn btn-info btn-sm">📝 Buat Travel Planner</a>
+                </td>
                 <td>
                     <a href="{{ route('meetings.edit', $meeting) }}" class="btn btn-warning btn-sm" @if($meeting->travelling_user_id != auth()->user()->id) disabled @endif>✏️ Edit</a>
                     <form action="{{ route('meetings.destroy', $meeting) }}" method="POST" class="d-inline">

@@ -12,7 +12,7 @@
             <div class="card shadow">
                 <div class="card-body text-center">
                     <h5 class="card-title">Meeting Planner 📅</h5>
-                    <p class="card-text">Atur jadwal pertemuan dengan pasangan.</p>
+                    <p class="card-text">Atur jadwal pertemuan.</p>
                     <a href="{{ route('meetings.index') }}" class="btn btn-primary">Lihat Planner</a>
                 </div>
             </div>
@@ -24,7 +24,7 @@
                 <div class="card-body text-center">
                     <h5 class="card-title">Travel Planner ✈️</h5>
                     <p class="card-text">Rencanakan perjalanan bersama.</p>
-                    <a href="#" class="btn btn-primary">Lihat Planner</a>
+                    <a href="{{ route('travels.index') }}" class="btn btn-primary">Lihat Planner</a>
                 </div>
             </div>
         </div>
