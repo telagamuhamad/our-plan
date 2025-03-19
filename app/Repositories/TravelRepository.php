@@ -14,7 +14,7 @@ class TravelRepository {
 
     public function getAllTravels(array $searchTerms = [])
     {
-        $travels = $this->model->with('meeting')->orWhereNull('meeting_id');
+        $travels = $this->model->orderBy('destination', 'asc');
 
         if (!empty($searchTerms)) {
             if (!empty($searchTerms['destination'])) {
@@ -57,5 +57,32 @@ class TravelRepository {
     public function delete(Travel $travel)
     {
         return $travel->delete();
+    }
+
+    public function assignToMeeting($meetingId, $travelId,$visitDate)
+    {
+        return $this->model->where('id', $travelId)->update([
+            'meeting_id' => $meetingId,
+            'visit_date' => $visitDate
+        ]);
+    }
+
+    public function removeFromMeeting($travelId)
+    {
+        return $this->model->where('id', $travelId)->update([
+            'meeting_id' => null
+        ]);
+    }
+
+    public function completeTravel($travelId)
+    {
+        return $this->model->where('id', $travelId)->update([
+            'completed' => true
+        ]);
+    }
+
+    public function findWithoutMeeting()
+    {
+        return $this->model->whereNull('meeting_id')->get();
     }
 }

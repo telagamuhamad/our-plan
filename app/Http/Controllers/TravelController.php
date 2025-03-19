@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\TravelRequest;
+use App\Services\MeetingService;
 use App\Services\TravelService;
 use Exception;
 use Illuminate\Http\Request;
@@ -12,10 +13,12 @@ use Illuminate\Support\Facades\DB;
 class TravelController extends Controller
 {
     protected $service;
+    protected $meetingService;
 
-    public function __construct(TravelService $service)
+    public function __construct(TravelService $service, MeetingService $meetingService)
     {
         $this->service = $service;
+        $this->meetingService = $meetingService;
     }
 
     public function index(Request $request) 
@@ -60,7 +63,6 @@ class TravelController extends Controller
             $payload = [
                 'meeting_id' => $request->meeting_id,
                 'destination' => $request->destination,
-                'visit_date' => $request->visit_date,
                 'completed' => false,
             ];
 
@@ -71,8 +73,7 @@ class TravelController extends Controller
             return redirect()->route('travels.index')->with('success', 'Travel created successfully.');
         } catch (Exception $e) {
             DB::rollBack();
-            // return redirect()->route('travels.index')->with('error', 'Failed to create travel.');
-            return redirect()->route('travels.index')->with('error', $e->getMessage());
+            return redirect()->route('travels.index')->with('error', 'Failed to create travel.');
         }
     }
 
@@ -96,7 +97,6 @@ class TravelController extends Controller
             $payload = [
                 'meeting_id' => $request->meeting_id,
                 'destination' => $request->destination,
-                'visit_date' => $request->visit_date,
                 'completed' => $request->completed,
             ];
 
@@ -125,6 +125,64 @@ class TravelController extends Controller
         } catch (Exception $e) {
             DB::rollBack();
             return redirect()->route('travels.index')->with('error', 'Failed to delete travel.');
+        }
+    }
+
+    public function assignToMeeting(Request $request, $meetingId)
+    {
+        if (empty($request->travel_id)) {
+            return redirect()->back()->with('error', 'Travel Planner ID is required.');
+        }
+
+        try {
+            $visitDate = $request->visit_date;
+            $travel = $this->service->findTravelById($request->travel_id);
+            $meeting = $this->meetingService->findMeetingById($meetingId);
+
+            DB::beginTransaction();
+
+            $this->service->assignToMeeting($meeting, $travel, $visitDate);
+
+            DB::commit();
+
+            return redirect()->back()->with('success', 'Travel Planner berhasil di-assign ke Meeting.');
+            
+        } catch (Exception $e) {
+            DB::rollBack();
+            // return redirect()->back()->with('error', 'Failed to assign Travel Planner to Meeting.');
+            return redirect()->back()->with('error', $e->getMessage());
+        }
+    }
+
+    public function removeFromMeeting($travelId)
+    {
+        try {
+            DB::beginTransaction();
+
+            $this->service->removeFromMeeting($travelId);
+
+            DB::commit();
+
+            return redirect()->back()->with('success', 'Travel Planner berhasil dihapus dari Meeting.');
+        } catch (Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Failed to remove Travel Planner from Meeting.');
+        }
+    }
+
+    public function completeTravel($travelId)
+    {
+        try {
+            DB::beginTransaction();
+
+            $this->service->completeTravel($travelId);
+
+            DB::commit();
+
+            return redirect()->back()->with('success', 'Travel Planner berhasil diselesaikan.');
+        } catch (Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Failed to complete Travel Planner.');
         }
     }
 }

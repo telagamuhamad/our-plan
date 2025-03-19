@@ -24,7 +24,7 @@ class TravelRequest extends FormRequest
         return [
             'meeting_id' => ['exists:meetings,id'],
             'destination' => ['required', 'string'],
-            'visit_date' => ['date'],
+            'visit_date' => ['date', 'nullable'],
             'completed' => ['boolean'],
         ];
     }

@@ -41,4 +41,34 @@ class TravelService {
 
         return $this->repository->delete($travel);
     }
+
+    public function assignToMeeting($meeting, $travel, $visitDate)
+    {
+        // Validate visit date
+        $this->validateVisitDate($visitDate, $meeting->start_date, $meeting->end_date);
+
+        return $this->repository->assignToMeeting($meeting->id, $travel->id, $visitDate);
+    }
+
+    public function removeFromMeeting($travelId)
+    {
+        return $this->repository->removeFromMeeting($travelId);
+    }
+
+    public function completeTravel($travelId) {
+        return $this->repository->completeTravel($travelId);
+    }
+
+    public function findWithoutMeeting()
+    {
+        return $this->repository->findWithoutMeeting();
+    }
+
+    private function validateVisitDate($visitDate, $meetingStartDate, $meetingEndDate) {
+        if ($visitDate < $meetingStartDate || $visitDate > $meetingEndDate) {
+            throw new Exception('Tanggal perjalanan harus dalam rentang tanggal meeting.');
+        }
+
+        return true;
+    }
 }

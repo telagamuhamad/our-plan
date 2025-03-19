@@ -24,10 +24,10 @@
             <input type="text" name="destination" id="destination" class="form-control" required>
         </div>
 
-        <div class="mb-3">
+        {{-- <div class="mb-3">
             <label for="visit_date" class="form-label">Tanggal Kunjungan</label>
-            <input type="date" name="visit_date" id="visit_date" class="form-control" required>
-        </div>
+            <input type="date" name="visit_date" id="visit_date" class="form-control">
+        </div> --}}
 
         <button type="submit" class="btn btn-success">Simpan</button>
     </form>

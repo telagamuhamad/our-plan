@@ -11,6 +11,10 @@
         <div class="alert alert-success">{{ session('success') }}</div>
     @endif
 
+    @if(session('error'))
+        <div class="alert alert-danger">{{ session('error') }}</div>
+    @endif
+
     <table class="table table-bordered">
         <thead class="table-light">
             <tr>
@@ -20,7 +24,6 @@
                 <th class="text-center">Lokasi</th>
                 <th class="text-center">Persiapan</th>
                 <th class="text-center">Catatan</th>
-                <th class="text-center">Plan</th>
                 <th class="text-center">Aksi</th>
             </tr>
         </thead>
@@ -29,7 +32,7 @@
             <tr>
                 <td>{{ $index + 1 }}</td>
                 <td>{{ $meeting->user->name }}</td>
-                <td><strong>{{ $meeting->meeting_date }}</strong></td>
+                <td><strong>{{ $meeting->formatted_start_date }} - {{ $meeting->formatted_end_date }}</strong></td>
                 <td>{{ $meeting->location ?? 'Belum Ditentukan' }}</td>
                 <td>
                     @if ($meeting->is_departure_transport_ready)
@@ -48,16 +51,16 @@
                         <span class="badge bg-danger">Tempat Istirahat Belum Siap</span>
                     @endif
                 </td>
-                <td>{{ $meeting->note ?? '-' }}</td>
                 <td>
-                    <a href="{{ route('travels.create', $meeting->id) }}" class="btn btn-info btn-sm">📝 Buat Travel Planner</a>
+                    {{ $meeting->note }}
                 </td>
                 <td>
+                    <a href="{{ route('meetings.show', $meeting->id) }}" class="btn btn-info btn-sm">📝 Detail</a>
                     <a href="{{ route('meetings.edit', $meeting) }}" class="btn btn-warning btn-sm" @if($meeting->travelling_user_id != auth()->user()->id) disabled @endif>✏️ Edit</a>
                     <form action="{{ route('meetings.destroy', $meeting) }}" method="POST" class="d-inline">
                         @csrf
                         @method('DELETE')
-                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Yakin ingin menghapus?')" @if($meeting->travelling_user_id != auth()->user()->id) disabled @endif>🗑️ Hapus</button>
+                        <button type="submit" class="btn btn-danger btn-sm" style="margin-top: 5px" onclick="return confirm('Yakin ingin menghapus?')" @if($meeting->travelling_user_id != auth()->user()->id) disabled @endif>🗑️ Hapus</button>
                     </form>
                 </td>
             </tr>

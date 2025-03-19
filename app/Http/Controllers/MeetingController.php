@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\MeetingRequest;
 use App\Services\MeetingService;
+use App\Services\TravelService;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -12,10 +13,12 @@ use Illuminate\Support\Facades\DB;
 class MeetingController extends Controller
 {
     protected $service;
+    protected $travelService;
 
-    public function __construct(MeetingService $service)
+    public function __construct(MeetingService $service, TravelService $travelService)
     {
         $this->service = $service;
+        $this->travelService = $travelService;
     }
     public function index(Request $request)
     {
@@ -34,6 +37,17 @@ class MeetingController extends Controller
         ]);
     }
 
+    public function show($meetingId)
+    {
+        $meeting = $this->service->findMeetingById($meetingId);
+        $availableTravels = $this->travelService->findWithoutMeeting($meetingId);
+
+        return view('meetings.show', [
+            'meeting' => $meeting,
+            'availableTravels' => $availableTravels
+        ]);
+    }
+
     public function create()
     {
         return view('meetings.create');
@@ -49,7 +63,8 @@ class MeetingController extends Controller
             $payload = [
                 'travelling_user_id' => $user->id,
                 'location' => $request->location,
-                'meeting_date' => $request->meeting_date,
+                'start_date' => $request->start_date,
+                'end_date' => $request->end_date,
                 'note' => $request->note,
                 'is_departure_transport_ready' => $request->has('is_departure_transport_ready'),
                 'is_return_transport_ready' => $request->has('is_return_transport_ready'),
@@ -87,7 +102,8 @@ class MeetingController extends Controller
             $payload = [
                 'travelling_user_id' => $request->travelling_user_id,
                 'location' => $request->location,
-                'meeting_date' => $request->meeting_date,
+                'start_date' => $request->start_date,
+                'end_date' => $request->end_date,
                 'is_departure_transport_ready' => $request->has('is_departure_transport_ready'),
                 'is_return_transport_ready' => $request->has('is_return_transport_ready'),
                 'is_rest_place_ready' => $request->has('is_rest_place_ready'),

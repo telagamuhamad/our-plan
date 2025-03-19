@@ -31,7 +31,7 @@
             <tr>
                 <td>{{ $index + 1 }}</td>
                 <td><strong>{{ $travel->destination }}</strong></td>
-                <td>{{ $travel->visit_date }}</td>
+                <td>{{ $travel->formatted_visit_date ?? '-'}}</td>
                 <td>
                     @if ($travel->meeting)
                         {{ $travel->meeting->location }} ({{ $travel->meeting->start_date }} - {{ $travel->meeting->end_date }})

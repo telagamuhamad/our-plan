@@ -27,12 +27,12 @@
 
         <div class="mb-3">
             <label for="visit_date" class="form-label">Tanggal Kunjungan</label>
-            <input type="date" name="visit_date" id="visit_date" class="form-control" value="{{ $travel->visit_date }}" required>
+            <input type="date" name="visit_date" id="visit_date" class="form-control" value="{{ $travel->visit_date }}" disabled>
         </div>
 
         <div class="mb-3">
             <label class="form-label">Status</label>
-            <select name="completed" class="form-control">
+            <select name="completed" class="form-control" disabled>
                 <option value="0" {{ !$travel->completed ? 'selected' : '' }}>Belum Selesai</option>
                 <option value="1" {{ $travel->completed ? 'selected' : '' }}>Selesai</option>
             </select>

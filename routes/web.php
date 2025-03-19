@@ -32,6 +32,7 @@ Route::middleware(['auth'])->group(function () {
     // Meetings
     Route::prefix('meetings')->group(function () {
         Route::get('index', [MeetingController::class, 'index'])->name('meetings.index');
+        Route::get('show/{meetingId}', [MeetingController::class, 'show'])->name('meetings.show');
         Route::get('create', [MeetingController::class, 'create'])->name('meetings.create');
         Route::post('store', [MeetingController::class, 'store'])->name('meetings.store');
         Route::get('edit/{meetingId}', [MeetingController::class, 'edit'])->name('meetings.edit');
@@ -48,5 +49,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('edit/{travelId}', [TravelController::class, 'edit'])->name('travels.edit');
         Route::put('update/{travelId}', [TravelController::class, 'update'])->name('travels.update');
         Route::delete('destroy/{travelId}', [TravelController::class, 'destroy'])->name('travels.destroy');
+        Route::post('assign-to-meeting/{meetingId}', [TravelController::class, 'assignToMeeting'])->name('travels.assign-to-meeting');
+        Route::patch('complete-travel/{travelId}', [TravelController::class, 'completeTravel'])->name('travels.complete-travel');
+        Route::patch('remove-from-meeting/{travelId}', [TravelController::class, 'removeFromMeeting'])->name('travels.remove-from-meeting');
     });
 });
