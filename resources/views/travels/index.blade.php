@@ -34,7 +34,7 @@
                 <td>{{ $travel->formatted_visit_date ?? '-'}}</td>
                 <td>
                     @if ($travel->meeting)
-                        {{ $travel->meeting->location }} ({{ $travel->meeting->start_date }} - {{ $travel->meeting->end_date }})
+                        {{ $travel->meeting->location }} ({{ $travel->meeting->formatted_start_date }} - {{ $travel->meeting->formatted_end_date }})
                     @else
                         <span class="text-muted">Tidak ada Meeting</span>
                     @endif

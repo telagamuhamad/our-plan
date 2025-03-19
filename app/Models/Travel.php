@@ -31,6 +31,8 @@ class Travel extends Model
 
     public function getFormattedVisitDateAttribute()
     {
-        return Carbon::parse($this->visit_date)->format('j F Y');
+        return $this->visit_date 
+        ? Carbon::parse($this->visit_date)->format('j F Y') 
+        : '-';
     }
 }

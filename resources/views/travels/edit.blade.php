@@ -22,7 +22,7 @@
 
         <div class="mb-3">
             <label for="destination" class="form-label">Destinasi</label>
-            <input type="text" name="destination" id="destination" class="form-control" value="{{ $travel->destination }}" required>
+            <input type="text" name="destination" id="destination" class="form-control" value="{{ $travel->destination }}" required @if($travel->completed) readonly @endif>
         </div>
 
         <div class="mb-3">
@@ -38,7 +38,7 @@
             </select>
         </div>
 
-        <button type="submit" class="btn btn-warning">Update</button>
+        <button type="submit" class="btn btn-warning" @if($travel->completed) disabled @endif>Update</button>
     </form>
 </div>
 @endsection
