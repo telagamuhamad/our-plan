@@ -27,14 +27,6 @@
             <input type="hidden" name="travelling_user_id" value="{{ auth()->user()->id }}">
         </div>
 
-        <div class="mb-3">
-            <label for="meeting_date" class="form-label">Tanggal Pertemuan</label>
-            <input type="date" name="meeting_date" id="meeting_date" class="form-control @error('meeting_date') is-invalid @enderror" value="{{ old('meeting_date', $meeting->meeting_date) }}" required>
-            @error('meeting_date')
-                <div class="invalid-feedback">{{ $message }}</div>
-            @enderror
-        </div>
-
         <!-- Tambahkan Start Date dan End Date -->
         <div class="mb-3">
             <label for="start_date" class="form-label">Tanggal Mulai</label>
