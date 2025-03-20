@@ -37,12 +37,13 @@ class SendMeetingReminders extends Command
                         ->orWhereDate('start_date', $now->copy()->addDay())
                         ->get();
 
-        foreach ($meetings as $meeting) {
-            foreach ($allUsers as $user) {
-                Mail::to($user->email)->send(new MeetingReminderMail($meeting, $user->name));
+        if (!empty($meetings)) {
+            foreach ($meetings as $meeting) {
+                foreach ($allUsers as $user) {
+                    Mail::to($user->email)->send(new MeetingReminderMail($meeting, $user->name));
+                }
             }
+            $this->info('Pengingat meeting telah dikirim.');   
         }
-
-        $this->info('Pengingat meeting telah dikirim.');
     }
 }
