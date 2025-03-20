@@ -3,22 +3,27 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\MeetingRequest;
+use App\Mail\MeetingConfirmationMail;
 use App\Services\MeetingService;
 use App\Services\TravelService;
+use App\Services\UserService;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 
 class MeetingController extends Controller
 {
     protected $service;
     protected $travelService;
+    protected $userService;
 
-    public function __construct(MeetingService $service, TravelService $travelService)
+    public function __construct(MeetingService $service, TravelService $travelService, UserService $userService)
     {
         $this->service = $service;
         $this->travelService = $travelService;
+        $this->userService = $userService;
     }
     public function index(Request $request)
     {
@@ -71,9 +76,15 @@ class MeetingController extends Controller
                 'is_rest_place_ready' => $request->has('is_rest_place_ready'),
             ];
     
-            $this->service->createMeeting($payload);
+            $meeting = $this->service->createMeeting($payload);
     
             DB::commit();
+
+            // Send mail
+            $allUsers = $this->userService->getAllUser();
+            foreach ($allUsers as $user) {
+                Mail::to($user->email)->send(new MeetingConfirmationMail($meeting, $user->name));
+            }
     
             return redirect()->route('meetings.index')->with('success', 'Meeting created successfully.');
         } catch (Exception $e) {

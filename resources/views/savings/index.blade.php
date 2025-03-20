@@ -41,19 +41,29 @@
             <tr>
                 <td>{{ $index + 1 }}</td>
                 <td><strong>{{ $saving->name }}</strong></td>
-                <td>Rp {{ number_format($saving->target_amount, 0, ',', '.') }}</td>
+                <td>
+                    @if (!$saving->is_shared)
+                        Rp {{ number_format($saving->target_amount, 0, ',', '.') }}
+                    @else
+                        -
+                    @endif
+                </td>
                 <td>Rp {{ number_format($saving->current_amount, 0, ',', '.') }}</td>
                 <td>
-                    <div class="progress" style="height: 20px;">
-                        <div class="progress-bar {{ $saving->progress >= 100 ? 'bg-success' : 'bg-info' }}" 
-                             role="progressbar" 
-                             style="width: {{ $saving->progress }}%;" 
-                             aria-valuenow="{{ $saving->progress }}" 
-                             aria-valuemin="0" 
-                             aria-valuemax="100">
-                            {{ round($saving->progress, 2) }}%
+                    @if (!$saving->is_shared)
+                        <div class="progress" style="height: 20px;">
+                            <div class="progress-bar {{ $saving->progress >= 100 ? 'bg-success' : 'bg-info' }}" 
+                                role="progressbar" 
+                                style="width: {{ $saving->progress }}%;" 
+                                aria-valuenow="{{ $saving->progress }}" 
+                                aria-valuemin="0" 
+                                aria-valuemax="100">
+                                {{ round($saving->progress, 2) }}%
+                            </div>
                         </div>
-                    </div>
+                    @else
+                        -
+                    @endif
                 </td>
                 <td>
                     <a href="{{ route('savings.show', $saving->id) }}" class="btn btn-info btn-sm">👁️ Detail</a>

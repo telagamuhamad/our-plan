@@ -30,7 +30,7 @@
 
         <div class="mb-3">
             <label for="target_amount" class="form-label">Target Tabungan (Rp)</label>
-            <input type="number" name="target_amount" id="target_amount" class="form-control @error('target_amount') is-invalid @enderror" value="{{ old('target_amount', $saving->target_amount) }}" required>
+            <input type="number" name="target_amount" id="target_amount" class="form-control @error('target_amount') is-invalid @enderror" value="{{ old('target_amount', $saving->target_amount) }}">
             @error('target_amount')
                 <div class="invalid-feedback">{{ $message }}</div>
             @enderror
