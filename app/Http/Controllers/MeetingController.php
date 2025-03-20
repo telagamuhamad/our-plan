@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\MeetingRequest;
+use App\Mail\MeetingCancellationMail;
 use App\Mail\MeetingConfirmationMail;
+use App\Mail\MeetingUpdatedMail;
 use App\Services\MeetingService;
 use App\Services\TravelService;
 use App\Services\UserService;
@@ -122,13 +124,20 @@ class MeetingController extends Controller
             ];
 
             $this->service->updateMeeting($meetingId, $payload);
+            $meeting = $this->service->findMeetingById($meetingId);
 
             DB::commit();
+
+            $allUsers = $this->userService->getAllUser();
+            foreach ($allUsers as $user) {
+                Mail::to($user->email)->send(new MeetingUpdatedMail($meeting, $user->name));
+            }
 
             return redirect()->route('meetings.index')->with('success', 'Meeting updated successfully.');
         } catch (Exception $e) {
             DB::rollBack();
-            return redirect()->route('meetings.index')->with('error', 'Failed to update meeting.');
+            // return redirect()->route('meetings.index')->with('error', 'Failed to update meeting.');
+            return redirect()->route('meetings.index')->with('error', $e->getMessage());
         }
     }
 
@@ -137,9 +146,16 @@ class MeetingController extends Controller
         try {
             DB::beginTransaction();
 
-            $this->service->findMeetingById($meetingId)->delete();
+            $meeting = $this->service->findMeetingById($meetingId);
+
+            $this->service->deleteMeeting($meetingId);
             
             DB::commit();
+
+            $allUsers = $this->userService->getAllUser();
+            foreach ($allUsers as $user) {
+                Mail::to($user->email)->send(new MeetingCancellationMail($meeting, $user->name));
+            }
             
             return redirect()->route('meetings.index')->with('success', 'Meeting deleted successfully.');
         } catch (Exception $e) {
