@@ -70,7 +70,8 @@ class TravelRepository {
     public function removeFromMeeting($travelId)
     {
         return $this->model->where('id', $travelId)->update([
-            'meeting_id' => null
+            'meeting_id' => null,
+            'visit_date' => null
         ]);
     }
 

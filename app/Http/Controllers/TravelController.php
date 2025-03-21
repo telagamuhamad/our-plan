@@ -3,22 +3,29 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\TravelRequest;
+use App\Mail\TravelAssignedMail;
+use App\Mail\TravelCompletedMail;
+use App\Mail\TravelUnassignedMail;
 use App\Services\MeetingService;
 use App\Services\TravelService;
+use App\Services\UserService;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 
 class TravelController extends Controller
 {
     protected $service;
     protected $meetingService;
+    protected $userService;
 
-    public function __construct(TravelService $service, MeetingService $meetingService)
+    public function __construct(TravelService $service, MeetingService $meetingService, UserService $userService)
     {
         $this->service = $service;
         $this->meetingService = $meetingService;
+        $this->userService = $userService;
     }
 
     public function index(Request $request) 
@@ -97,7 +104,7 @@ class TravelController extends Controller
             $payload = [
                 'meeting_id' => $request->meeting_id,
                 'destination' => $request->destination,
-                'completed' => $request->completed,
+                'completed' => $request->completed ?? false,
             ];
 
             $this->service->update($travelId, $payload);
@@ -108,7 +115,8 @@ class TravelController extends Controller
 
         } catch (Exception $e) {
             DB::rollBack();
-            return redirect()->route('travels.index')->with('error', 'Failed to update travel.');
+            // return redirect()->route('travels.index')->with('error', 'Failed to update travel.');
+            return redirect()->route('travels.index')->with('error', $e->getMessage());
         }
     }
 
@@ -145,6 +153,12 @@ class TravelController extends Controller
 
             DB::commit();
 
+            // send assignation mail
+            $allUsers = $this->userService->getAllUser();
+            foreach ($allUsers as $user) {
+                Mail::to($user->email)->send(new TravelAssignedMail($travel, $meeting, $user->name));
+            }
+
             return redirect()->back()->with('success', 'Travel Planner berhasil di-assign ke Meeting.');
             
         } catch (Exception $e) {
@@ -159,9 +173,17 @@ class TravelController extends Controller
         try {
             DB::beginTransaction();
 
+            $travel = $this->service->findTravelById($travelId);
+            $meeting = $this->meetingService->findMeetingById($travel->meeting_id);
             $this->service->removeFromMeeting($travelId);
 
             DB::commit();
+
+            // send cancellation mail
+            $allUsers = $this->userService->getAllUser();
+            foreach ($allUsers as $user) {
+                Mail::to($user->email)->send(new TravelUnassignedMail($travel, $meeting, $user->name));
+            }
 
             return redirect()->back()->with('success', 'Travel Planner berhasil dihapus dari Meeting.');
         } catch (Exception $e) {
@@ -175,9 +197,18 @@ class TravelController extends Controller
         try {
             DB::beginTransaction();
 
+            $travel = $this->service->findTravelById($travelId);
+            $meeting = $this->meetingService->findMeetingById($travel->meeting_id);
+
             $this->service->completeTravel($travelId);
 
             DB::commit();
+
+            // send completion mail
+            $allUsers = $this->userService->getAllUser();
+            foreach ($allUsers as $user) {
+                Mail::to($user->email)->send(new TravelCompletedMail($travel, $meeting, $user->name));
+            }
 
             return redirect()->back()->with('success', 'Travel Planner berhasil diselesaikan.');
         } catch (Exception $e) {
