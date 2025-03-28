@@ -4,12 +4,20 @@
 
 @section('content')
 <div class="container">
-    <h2>💰 Savings Tracker</h2>
-    <a href="{{ route('savings.create') }}" class="btn btn-primary mb-3">➕ Tambah Tabungan</a>
-    <a href="{{ route('savings.transfer.form') }}" class="btn btn-warning mb-3">🔄 Transfer Saldo</a>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="mb-0">💰 <strong>Savings Tracker</strong></h2>
+        <div>
+            <a href="{{ route('savings.create') }}" class="btn btn-primary me-2">➕ Tambah Tabungan</a>
+            <a href="{{ route('savings.transfer.form') }}" class="btn btn-warning">🔄 Transfer Saldo</a>
+        </div>
+    </div>
 
     @if(session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>
+    @endif
+
+    @if(session('error'))
+        <div class="alert alert-danger">{{ session('error') }}</div>
     @endif
 
     <!-- Filter Kategori -->
@@ -25,8 +33,8 @@
         </select>
     </form>
 
-    <table class="table table-bordered">
-        <thead class="table-light">
+    <table class="table table-bordered table-hover">
+        <thead class="table-light text-center">
             <tr>
                 <th>#</th>
                 <th>Nama Tabungan</th>
@@ -39,19 +47,19 @@
         <tbody>
             @foreach ($savings as $index => $saving)
             <tr>
-                <td>{{ $index + 1 }}</td>
+                <td class="text-center">{{ $index + 1 }}</td>
                 <td><strong>{{ $saving->name }}</strong></td>
-                <td>
+                <td class="text-end">
                     @if (!$saving->is_shared)
                         Rp {{ number_format($saving->target_amount, 0, ',', '.') }}
                     @else
-                        -
+                        <span class="text-muted">-</span>
                     @endif
                 </td>
-                <td>Rp {{ number_format($saving->current_amount, 0, ',', '.') }}</td>
+                <td class="text-end">Rp {{ number_format($saving->current_amount, 0, ',', '.') }}</td>
                 <td>
                     @if (!$saving->is_shared)
-                        <div class="progress" style="height: 20px;">
+                        <div class="progress" style="height: 14px;">
                             <div class="progress-bar {{ $saving->progress >= 100 ? 'bg-success' : 'bg-info' }}" 
                                 role="progressbar" 
                                 style="width: {{ $saving->progress }}%;" 
@@ -62,10 +70,10 @@
                             </div>
                         </div>
                     @else
-                        -
+                        <span class="text-muted">-</span>
                     @endif
                 </td>
-                <td>
+                <td class="text-center">
                     <a href="{{ route('savings.show', $saving->id) }}" class="btn btn-info btn-sm">👁️ Detail</a>
                     <a href="{{ route('savings.edit', $saving->id) }}" class="btn btn-warning btn-sm">✏️ Edit</a>
                     <form action="{{ route('savings.destroy', $saving->id) }}" method="POST" class="d-inline">
@@ -84,13 +92,17 @@
         </div>
     @endif
 
-    <h3 class="mt-5 text-center">📊 Distribusi Tabungan</h3>
+    <h3 class="mt-5 mb-3 text-center">
+        📊 <strong>Distribusi Tabungan</strong>
+    </h3>
 
-    <div class="d-flex justify-content-center">
-        <div style="width: 50%; position: relative;">
+    <div class="d-flex justify-content-center mb-5">
+        <div style="width: 400px; position: relative;">
             <canvas id="savingsChart"></canvas>
-            <div id="chart-center-text" 
-                 style="position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); font-size: 20px; font-weight: bold;">
+            <div id="chart-center-text"
+                 style="position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+                        font-size: 18px; font-weight: bold; text-align: center;">
+                Total<br>
                 Rp {{ number_format($savings->sum('current_amount'), 0, ',', '.') }}
             </div>
         </div>
@@ -137,5 +149,4 @@
         }
     });
 </script>
-
 @endsection

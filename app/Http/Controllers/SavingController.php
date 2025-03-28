@@ -3,18 +3,23 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\SavingRequest;
+use App\Mail\SavingTransferMail;
 use App\Services\SavingService;
+use App\Services\UserService;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 
 class SavingController extends Controller
 {
     protected $service;
+    protected $userService;
 
-    public function __construct(SavingService $service)
+    public function __construct(SavingService $service, UserService $userService)
     {
         $this->service = $service;
+        $this->userService = $userService;
     }
 
     public function index()
@@ -167,11 +172,18 @@ class SavingController extends Controller
 
             DB::commit();
 
+            // Send mail
+            $users = $this->userService->getAllUser();
+            foreach ($users as $user) {
+                Mail::to($user->email)->send(new SavingTransferMail($sourceSaving, $targetSaving, $amount, $user->name));
+            }
+
             return redirect()->route('savings.index')->with('success', 'Transfer successful.');
         } catch (Exception $e) {
             DB::rollBack();
 
-            return back()->with('error', 'Something went wrong.');
+            // return back()->with('error', 'Something went wrong.');
+            return back()->with('error', $e->getMessage());
         }
     }
 }
