@@ -104,15 +104,15 @@
             
             @auth
                 @php
-                    $isDashboard = Route::currentRouteName() === 'dashboard';
+                    $routeName = Route::currentRouteName();
                 @endphp
     
                 <div class="d-flex flex-wrap gap-2 align-items-center ms-auto">
-                    @unless($isDashboard)
+                    @if (str_contains($routeName, 'meetings') || str_contains($routeName, 'travels') || str_contains($routeName, 'savings'))
                         <span class="me-2 fw-semibold text-primary">
                             👋 Hai, {{ Auth::user()->name }}
                         </span>
-                    @endunless
+                    @endif
     
                     <a class="btn btn-outline-primary" href="{{ route('dashboard') }}">Dashboard</a>
     
