@@ -96,8 +96,8 @@
 
     <!-- Footer -->
     <footer class="footer mt-auto">
-        &copy; {{ date('Y') }} Planner | Dibuat dengan ❤️ oleh Kamu & Pasangan
-        {{-- &copy; {{ date('Y') }} Planner | Dibuat dengan tangan kamu --}}
+        {{-- &copy; {{ date('Y') }} Planner | Dibuat dengan ❤️ oleh Kamu & Pasangan --}}
+        &copy; {{ date('Y') }} Planner | Dibuat dengan tangan kamu
     </footer>
 
 </body>
