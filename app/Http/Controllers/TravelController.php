@@ -116,7 +116,6 @@ class TravelController extends Controller
         } catch (Exception $e) {
             DB::rollBack();
             return redirect()->route('travels.index')->with('error', 'Failed to update travel.');
-            // return redirect()->route('travels.index')->with('error', $e->getMessage());
         }
     }
 
