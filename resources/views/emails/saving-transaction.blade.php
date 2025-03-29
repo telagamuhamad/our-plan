@@ -1,11 +1,7 @@
 <h2>💸 Transaksi Tabungan</h2>
 <p>Hai {{ $user_name }},</p>
 
-@if ($type === 'deposit')
-    <p>Ada transaksi masuk di tabungan kita nih!😁</p>
-@else
-    <p>Ada transaksi keluar di tabungan kita nih!☹️</p>
-@endif
+<p>Ada transaksi {{ $type }} di tabungan kita nih!😲</p>
 <p>Berikut ringkasan transaksi tabungan kamu:</p>
 
 <ul>
