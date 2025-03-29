@@ -33,58 +33,60 @@
         </select>
     </form>
 
-    <table class="table table-bordered table-hover">
-        <thead class="table-light text-center">
-            <tr>
-                <th>#</th>
-                <th>Nama Tabungan</th>
-                <th>Target</th>
-                <th>Jumlah Saat Ini</th>
-                <th>Progress</th>
-                <th>Aksi</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach ($savings as $index => $saving)
-            <tr>
-                <td class="text-center">{{ $index + 1 }}</td>
-                <td><strong>{{ $saving->name }}</strong></td>
-                <td class="text-end">
-                    @if (!$saving->is_shared)
-                        Rp {{ number_format($saving->target_amount, 0, ',', '.') }}
-                    @else
-                        <span class="text-muted">-</span>
-                    @endif
-                </td>
-                <td class="text-end">Rp {{ number_format($saving->current_amount, 0, ',', '.') }}</td>
-                <td>
-                    @if (!$saving->is_shared)
-                        <div class="progress" style="height: 14px;">
-                            <div class="progress-bar {{ $saving->progress >= 100 ? 'bg-success' : 'bg-info' }}" 
-                                role="progressbar" 
-                                style="width: {{ $saving->progress }}%;" 
-                                aria-valuenow="{{ $saving->progress }}" 
-                                aria-valuemin="0" 
-                                aria-valuemax="100">
-                                {{ round($saving->progress, 2) }}%
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover">
+            <thead class="table-light text-center">
+                <tr>
+                    <th>#</th>
+                    <th>Nama Tabungan</th>
+                    <th>Target</th>
+                    <th>Jumlah Saat Ini</th>
+                    <th>Progress</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach ($savings as $index => $saving)
+                <tr>
+                    <td class="text-center">{{ $index + 1 }}</td>
+                    <td><strong>{{ $saving->name }}</strong></td>
+                    <td class="text-end">
+                        @if (!$saving->is_shared)
+                            Rp {{ number_format($saving->target_amount, 0, ',', '.') }}
+                        @else
+                            <span class="text-muted">-</span>
+                        @endif
+                    </td>
+                    <td class="text-end">Rp {{ number_format($saving->current_amount, 0, ',', '.') }}</td>
+                    <td>
+                        @if (!$saving->is_shared)
+                            <div class="progress" style="height: 14px;">
+                                <div class="progress-bar {{ $saving->progress >= 100 ? 'bg-success' : 'bg-info' }}" 
+                                    role="progressbar" 
+                                    style="width: {{ $saving->progress }}%;" 
+                                    aria-valuenow="{{ $saving->progress }}" 
+                                    aria-valuemin="0" 
+                                    aria-valuemax="100">
+                                    {{ round($saving->progress, 2) }}%
+                                </div>
                             </div>
-                        </div>
-                    @else
-                        <span class="text-muted">-</span>
-                    @endif
-                </td>
-                <td class="text-center">
-                    <a href="{{ route('savings.show', $saving->id) }}" class="btn btn-info btn-sm">👁️ Detail</a>
-                    <a href="{{ route('savings.edit', $saving->id) }}" class="btn btn-warning btn-sm">✏️ Edit</a>
-                    <form action="{{ route('savings.destroy', $saving->id) }}" method="POST" class="d-inline">
-                        @csrf @method('DELETE')
-                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Yakin ingin menghapus?')">🗑️ Hapus</button>
-                    </form>
-                </td>
-            </tr>
-            @endforeach
-        </tbody>
-    </table>
+                        @else
+                            <span class="text-muted">-</span>
+                        @endif
+                    </td>
+                    <td class="text-center">
+                        <a href="{{ route('savings.show', $saving->id) }}" class="btn btn-info btn-sm">👁️ Detail</a>
+                        <a href="{{ route('savings.edit', $saving->id) }}" class="btn btn-warning btn-sm">✏️ Edit</a>
+                        <form action="{{ route('savings.destroy', $saving->id) }}" method="POST" class="d-inline">
+                            @csrf @method('DELETE')
+                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Yakin ingin menghapus?')">🗑️ Hapus</button>
+                        </form>
+                    </td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+    </div>
 
     @if($savings->isEmpty())
         <div class="alert alert-warning text-center">
