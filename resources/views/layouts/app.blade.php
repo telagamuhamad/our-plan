@@ -1,3 +1,22 @@
+@php
+    $routeName = Route::currentRouteName();
+    $backgrounds = [
+        'meetings.*' => 'bg-meetings.jpg',
+        'travels.*' => 'bg-travels.jpg',
+        'savings.*' => 'bg-savings.jpg',
+    ];
+
+    $bgImage = 'default.jpg'; // fallback default
+    foreach ($backgrounds as $pattern => $image) {
+        if (Str::is($pattern, $routeName)) {
+            $bgImage = $image;
+            break;
+        } else {
+            $bgImage = 'default.jpg';
+        }
+    }
+@endphp
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -12,22 +31,29 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 
     <style>
-        /* Font & Layout */
-        body {
-            font-family: 'Poppins', sans-serif;
-            background-color: #f8f9fc;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
+    body {
+        background: url('{{ asset('images/' . $bgImage) }}') no-repeat center center fixed;
+        background-size: cover;
+        font-family: 'Poppins', sans-serif;
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+    }
 
         .content {
             flex: 1;
         }
 
-        /* Navbar */
+        .glass-container {
+            background-color: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(3px);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
+        }
+
         .navbar {
-            background-color: #fff;
+            background-color: rgba(255, 255, 255, 0.95);
             border-bottom: 1px solid #dee2e6;
         }
 
@@ -35,16 +61,14 @@
             font-weight: 600;
         }
 
-        /* Footer */
         .footer {
-            background-color: #f8f9fa;
+            background-color: rgba(255, 255, 255, 0.9);
             padding: 16px;
             text-align: center;
             font-size: 14px;
             color: #6c757d;
         }
 
-        /* Card improvement (optional global) */
         .card {
             border-radius: 12px;
         }
@@ -77,27 +101,40 @@
     <nav class="navbar navbar-expand-lg shadow-sm">
         <div class="container">
             <a class="navbar-brand" href="{{ route('dashboard') }}">Planner</a>
-            <div class="d-flex flex-wrap gap-2">
-                @auth
+            
+            @auth
+                @php
+                    $isDashboard = Route::currentRouteName() === 'dashboard';
+                @endphp
+    
+                <div class="d-flex flex-wrap gap-2 align-items-center ms-auto">
+                    @unless($isDashboard)
+                        <span class="me-2 fw-semibold text-primary">
+                            👋 Hai, {{ Auth::user()->name }}
+                        </span>
+                    @endunless
+    
                     <a class="btn btn-outline-primary" href="{{ route('dashboard') }}">Dashboard</a>
-                    <form action="{{ route('logout') }}" method="POST">
+    
+                    <form action="{{ route('logout') }}" method="POST" class="d-inline">
                         @csrf
                         <button class="btn btn-outline-danger">Logout</button>
                     </form>
-                @endauth
-            </div>
+                </div>
+            @endauth
         </div>
-    </nav>
+    </nav>    
 
     <!-- Content -->
     <main class="container py-4 content">
-        @yield('content')
+        <div class="glass-container">
+            @yield('content')
+        </div>
     </main>
 
     <!-- Footer -->
     <footer class="footer mt-auto">
-        {{-- &copy; {{ date('Y') }} Planner | Dibuat dengan ❤️ oleh Kamu & Pasangan --}}
-        &copy; {{ date('Y') }} Planner | Dibuat dengan tangan kamu
+        &copy; {{ date('Y') }} Planner | Dibuat untuk kita❤️
     </footer>
 
 </body>
