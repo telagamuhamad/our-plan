@@ -162,10 +162,12 @@ class TravelApiController extends Controller
 
             DB::commit();
 
+            $updatedTravel = $this->service->findTravelById($request->travel_id);
+
             // send assignation mail
             $allUsers = $this->userService->getAllUser();
             foreach ($allUsers as $user) {
-                Mail::to($user->email)->send(new TravelAssignedMail($travel, $meeting, $user->name));
+                Mail::to($user->email)->send(new TravelAssignedMail($updatedTravel, $meeting, $user->name));
             }
 
             return response()->json([
