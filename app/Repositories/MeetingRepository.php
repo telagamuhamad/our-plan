@@ -34,7 +34,7 @@ class MeetingRepository {
             }
         }
 
-        $meetings = $meetings->with('user')->paginate(10);
+        $meetings = $meetings->with('user', 'travels')->paginate(10);
 
         return $meetings;
     }

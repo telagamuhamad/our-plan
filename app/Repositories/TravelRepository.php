@@ -34,7 +34,7 @@ class TravelRepository {
             }
         }
 
-        $travels = $travels->paginate(10);
+        $travels = $travels->with('meeting')->paginate(10);
 
         return $travels;
     }
@@ -85,5 +85,17 @@ class TravelRepository {
     public function findWithoutMeeting()
     {
         return $this->model->whereNull('meeting_id')->get();
+    }
+
+    public function findWithMeeting($meetingId)
+    {
+        return $this->model->where('meeting_id', $meetingId)->get();
+    }
+
+    public function updateVisitDate($travelId, $visitDate)
+    {
+        return $this->model->where('id', $travelId)->update([
+            'visit_date' => $visitDate
+        ]);
     }
 }
