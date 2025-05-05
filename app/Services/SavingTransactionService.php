@@ -38,6 +38,7 @@ class SavingTransactionService{
             'type' => $payload['type'],
             'amount' => $payload['amount'],
             'note' => $payload['note'],
+            'actor_user_id' => $payload['actor_user_id']
         ]);
 
         if ($payload['type'] === 'deposit') {

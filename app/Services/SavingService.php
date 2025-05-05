@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Repositories\SavingRepository;
 use App\Repositories\SavingTransactionRepository;
+use Illuminate\Support\Facades\Auth;
 
 class SavingService{
     protected $repository;
@@ -42,6 +43,7 @@ class SavingService{
 
     public function transfer($sourceSaving, $targetSaving, $amount)
     {
+        $user = Auth::user();
         // reduce source saving amount
         $sourceSaving->decrement('current_amount', $amount);
 
@@ -53,6 +55,7 @@ class SavingService{
             'type' => 'transfer',
             'amount' => $amount,
             'note' => 'Transfer ke ' . $targetSaving->name,
+            'actor_user_id' => $user->id
         ]);
 
         $this->savingTransactionRepository->create([
@@ -60,6 +63,7 @@ class SavingService{
             'type' => 'transfer',
             'amount' => $amount,
             'note' => 'Transfer dari ' . $sourceSaving->name,
+            'actor_user_id' => $user->id
         ]);
     }
 }

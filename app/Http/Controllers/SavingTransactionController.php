@@ -9,6 +9,7 @@ use App\Services\SavingTransactionService;
 use App\Services\UserService;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 
@@ -27,10 +28,12 @@ class SavingTransactionController extends Controller
 
     public function store(SavingTransactionRequest $request, $savingId)
     {
+        $user = Auth::user();
         $payload = [
             'type' => $request->type,
             'amount' => $request->amount,
             'note' => $request->note,
+            'actor_user_id' => $user->id
         ];
 
         $saving = $this->savingService->findSaving($savingId);

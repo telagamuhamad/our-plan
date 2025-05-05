@@ -4,23 +4,26 @@ namespace App\Http\Controllers\Api;
 
 use Exception;
 use Illuminate\Http\Request;
-use App\Services\UserService;
-use App\Services\SavingService;
+use App\Services\Api\UserService;
+use App\Services\Api\SavingService;
 use App\Mail\SavingTransferMail;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\SavingRequest;
+use App\Services\Api\SavingTransactionService;
 use Illuminate\Support\Facades\Mail;
 
 class SavingApiController extends Controller
 {
     protected $service;
     protected $userService;
+    protected $savingTransactionService;
 
-    public function __construct(SavingService $service, UserService $userService)
+    public function __construct(SavingService $service, UserService $userService, SavingTransactionService $savingTransactionService)
     {
         $this->service = $service;
         $this->userService = $userService;
+        $this->savingTransactionService = $savingTransactionService;
     }
 
     public function index()
@@ -65,9 +68,12 @@ class SavingApiController extends Controller
             ], 400);
         }
 
+        $transactions = $this->savingTransactionService->getTransactionsBySavingId($saving->id);
+
         return response()->json([
             'success' => true,
-            'saving' => $saving
+            'saving' => $saving,
+            'transactions' => $transactions
         ], 200);
     }
 
