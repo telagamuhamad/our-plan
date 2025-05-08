@@ -14,7 +14,7 @@ class SavingTransactionRepository{
 
     public function getBySavingId($savingId)
     {
-        return $this->model->where('saving_id', $savingId)->orderBy('created_at', 'desc')->get();
+        return $this->model->where('saving_id', $savingId)->with('user')->orderBy('created_at', 'desc')->get();
     }
 
     public function findBySavingId($savingId)

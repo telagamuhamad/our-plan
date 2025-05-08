@@ -3,14 +3,14 @@
 namespace App\Http\Controllers\Api;
 
 use Illuminate\Http\Request;
-use App\Services\UserService;
-use App\Services\TravelService;
-use App\Services\MeetingService;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\TravelRequest;
 use App\Mail\TravelAssignedMail;
 use App\Mail\TravelCompletedMail;
 use App\Mail\TravelUnassignedMail;
+use App\Services\Api\MeetingService;
+use App\Services\Api\TravelService;
+use App\Services\Api\UserService;
 use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -42,8 +42,7 @@ class TravelApiController extends Controller
 
         return response()->json([
             'success' => true,
-            'travels' => $travels,
-            'user' => $user
+            'travels' => $travels
         ], 200);
     }
 
@@ -158,6 +157,13 @@ class TravelApiController extends Controller
 
             DB::beginTransaction();
 
+            $validateVisitDate = $this->service->validateVisitDate($visitDate, $meeting->start_date, $meeting->end_date);
+            if (!$validateVisitDate) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Visit Date harus dalam rentang tanggal Meeting.' 
+                ], 400);
+            }
             $this->service->assignToMeeting($meeting, $travel, $visitDate);
 
             DB::commit();
@@ -245,6 +251,58 @@ class TravelApiController extends Controller
                 'message' => 'Failed to complete Travel Planner.',
                 'error' => $e->getMessage()
             ]);
+        }
+    }
+
+    public function getUnassignedTravels()
+    {
+        $travels = $this->service->findWithoutMeeting();
+
+        return response()->json([
+            'success' => true,
+            'data' => $travels  
+        ], 200);
+    }
+
+    public function updateVisitDate(Request $request, $travelId)
+    {
+        $visitDate = $request->visit_date;
+        $travel = $this->service->findTravelById($travelId);
+        if (empty($travel)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Travel not found.',
+            ], 400);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $validateVisitDate = $this->service->validateVisitDate($visitDate, $travel->meeting->start_date, $travel->meeting->end_date);
+            if (!$validateVisitDate) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Visit Date harus dalam rentang tanggal Meeting.' 
+                ], 400);
+            }
+
+            $this->service->updateVisitDate($travelId, $visitDate);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Visit Date berhasil diubah.'
+            ], 200);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update Visit Date.',
+                'reference' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
+            ], 400);
         }
     }
 }

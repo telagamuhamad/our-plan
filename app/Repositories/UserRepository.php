@@ -16,4 +16,9 @@ class UserRepository{
     {
         return $this->model->get();
     }
+
+    public function findUserById($userId)
+    {
+        return $this->model->select('name')->where('id', $userId)->first();
+    }
 }

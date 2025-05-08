@@ -16,11 +16,17 @@ class SavingTransaction extends Model
         'saving_id',
         'type',
         'amount',
-        'note'
+        'note',
+        'actor_user_id',
     ];
 
     public function savingData()
     {
         return $this->belongsTo(Saving::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'actor_user_id');
     }
 }

@@ -22,10 +22,10 @@ class TravelRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'meeting_id' => ['exists:meetings,id'],
+            // 'meeting_id' => ['exists:meetings,id'],
             'destination' => ['required', 'string'],
-            'visit_date' => ['date', 'nullable'],
-            'completed' => ['boolean'],
+            // 'visit_date' => ['date', 'nullable'],
+            // 'completed' => ['boolean'],
         ];
     }
 }

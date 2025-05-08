@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\Api;
 
 use App\Repositories\SavingRepository;
 use App\Repositories\SavingTransactionRepository;
@@ -44,6 +44,7 @@ class SavingService{
     public function transfer($sourceSaving, $targetSaving, $amount)
     {
         $user = Auth::user();
+
         // reduce source saving amount
         $sourceSaving->decrement('current_amount', $amount);
 

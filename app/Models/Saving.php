@@ -32,6 +32,9 @@ class Saving extends Model
 
     public function getProgressAttribute()
     {
+        if ($this->target_amount == 0) {
+            return 0;
+        }
         return $this->current_amount / $this->target_amount * 100;
     }
 }

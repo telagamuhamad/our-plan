@@ -7,9 +7,9 @@ use App\Http\Requests\MeetingRequest;
 use App\Mail\MeetingCancellationMail;
 use App\Mail\MeetingConfirmationMail;
 use App\Mail\MeetingUpdatedMail;
-use App\Services\MeetingService;
-use App\Services\TravelService;
-use App\Services\UserService;
+use App\Services\Api\MeetingService;
+use App\Services\Api\TravelService;
+use App\Services\Api\UserService;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -39,6 +39,22 @@ class MeetingApiController extends Controller
         ];
 
         $meetings = $this->service->getAllMeetings($searchTerms);
+        
+        // Loop meeting->travels to check travel visit date
+        foreach ($meetings as $meeting) {
+            if (!empty($meeting->travels)) {
+                $isNeedUpdate = false;
+                $countDataNeedUpdate = 0;
+                foreach ($meeting->travels as $travel) {
+                    if ($travel->visit_date < $meeting->start_date || $travel->visit_date > $meeting->end_date) {
+                        $isNeedUpdate = true;
+                        $countDataNeedUpdate++;
+                    }
+                    $travel['is_need_update'] = $isNeedUpdate;
+                }
+                $meeting['count_data_need_update'] = $countDataNeedUpdate;
+            }
+        }
 
         return response()->json([
             'meetings' => $meetings,
@@ -49,11 +65,13 @@ class MeetingApiController extends Controller
     public function show($meetingId)
     {
         $meeting = $this->service->findMeetingById($meetingId);
-        $availableTravels = $this->travelService->findWithoutMeeting($meetingId);
+        $userData = $this->userService->findUserById($meeting->travelling_user_id);
+        $assignedTravels = $this->travelService->findWithMeeting($meetingId);
 
         return response()->json([
             'meeting' => $meeting,
-            'availableTravels' => $availableTravels
+            'travels' => $assignedTravels,
+            'travelling_user' => $userData
         ], 200);
     }
 
@@ -70,9 +88,9 @@ class MeetingApiController extends Controller
                 'start_date' => $request->start_date,
                 'end_date' => $request->end_date,
                 'note' => $request->note,
-                'is_departure_transport_ready' => $request->has('is_departure_transport_ready'),
-                'is_return_transport_ready' => $request->has('is_return_transport_ready'),
-                'is_rest_place_ready' => $request->has('is_rest_place_ready'),
+                'is_departure_transport_ready' => $request->is_departure_transport_ready,
+                'is_return_transport_ready' => $request->is_return_transport_ready,
+                'is_rest_place_ready' => $request->is_rest_place_ready
             ];
     
             $meeting = $this->service->createMeeting($payload);
@@ -110,10 +128,10 @@ class MeetingApiController extends Controller
                 'location' => $request->location,
                 'start_date' => $request->start_date,
                 'end_date' => $request->end_date,
-                'is_departure_transport_ready' => $request->has('is_departure_transport_ready'),
-                'is_return_transport_ready' => $request->has('is_return_transport_ready'),
-                'is_rest_place_ready' => $request->has('is_rest_place_ready'),
                 'note' => $request->note,
+                'is_departure_transport_ready' => $request->is_departure_transport_ready,
+                'is_return_transport_ready' => $request->is_return_transport_ready,
+                'is_rest_place_ready' => $request->is_rest_place_ready,
             ];
 
             $this->service->updateMeeting($meetingId, $payload);

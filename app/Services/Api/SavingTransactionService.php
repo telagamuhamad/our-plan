@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\Api;
 
 use App\Mail\SavingTransactionMail;
 use App\Repositories\SavingRepository;
@@ -38,7 +38,6 @@ class SavingTransactionService{
             'type' => $payload['type'],
             'amount' => $payload['amount'],
             'note' => $payload['note'],
-            'actor_user_id' => $payload['actor_user_id']
         ]);
 
         if ($payload['type'] === 'deposit') {
