@@ -57,7 +57,7 @@ class SavingTransactionController extends Controller
             return redirect()->route('savings.index')->with('success', 'Saving transaction created successfully.');
         } catch (Exception $e) {
             DB::rollBack();
-
+            report($e);
             return back()->with('error', 'Something went wrong.');
         }
     }

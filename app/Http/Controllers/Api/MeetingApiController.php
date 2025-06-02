@@ -110,6 +110,7 @@ class MeetingApiController extends Controller
             ], 200);
         } catch (Exception $e) {
             DB::rollBack();
+            report($e);
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to create meeting.',
@@ -151,6 +152,7 @@ class MeetingApiController extends Controller
             ], 200);
         } catch (Exception $e) {
             DB::rollBack();
+            report($e);
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to update meeting.',
@@ -181,6 +183,7 @@ class MeetingApiController extends Controller
             ], 200);
         } catch (Exception $e) {
             DB::rollBack();
+            report($e);
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to delete meeting.',

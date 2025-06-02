@@ -98,6 +98,7 @@ class SavingApiController extends Controller
             ], 200);
         } catch (Exception $e) {
             DB::rollBack();
+            report($e);
 
             return response()->json([
                 'success' => false,
@@ -128,6 +129,7 @@ class SavingApiController extends Controller
             ], 200);
         } catch (Exception $e) {
             DB::rollBack();
+            report($e);
 
             return response()->json([
                 'success' => false,
@@ -160,6 +162,7 @@ class SavingApiController extends Controller
             ], 200);
         } catch (Exception $e) {
             DB::rollBack();
+            report($e);
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to delete saving.',
@@ -206,6 +209,7 @@ class SavingApiController extends Controller
             ], 200);
         } catch (Exception $e) {
             DB::rollBack();
+            report($e);
 
             return response()->json([
                 'success' => false,
