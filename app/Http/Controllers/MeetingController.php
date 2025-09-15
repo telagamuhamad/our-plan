@@ -146,6 +146,7 @@ class MeetingController extends Controller
 
     public function destroy($meetingId)
     {
+        dd(Auth::user());
         try {
             DB::beginTransaction();
 
