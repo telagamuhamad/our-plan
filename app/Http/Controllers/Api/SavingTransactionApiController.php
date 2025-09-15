@@ -64,7 +64,7 @@ class SavingTransactionApiController extends Controller
             ], 200);
         } catch (Exception $e) {
             DB::rollBack();
-            // report($e);
+            report($e);
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to create saving transaction.',

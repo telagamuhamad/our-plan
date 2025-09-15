@@ -92,7 +92,7 @@ class MeetingController extends Controller
             return redirect()->route('meetings.index')->with('success', 'Meeting created successfully.');
         } catch (Exception $e) {
             DB::rollBack();
-            // report($e);
+            report($e);
             return redirect()->route('meetings.index')->with('error', 'Failed to create meeting.');
         }
     }    
@@ -138,9 +138,8 @@ class MeetingController extends Controller
             return redirect()->route('meetings.index')->with('success', 'Meeting updated successfully.');
         } catch (Exception $e) {
             DB::rollBack();
-            // report($e);
-            return redirect()->route('meetings.index')->with('error', 'Failed to update meeting. '. $e->getMessage() . 'message');
-            // return redirect()->route('meetings.index')->with('error', $e->getMessage());
+            report($e);
+            return redirect()->route('meetings.index')->with('error', 'Failed to update meeting.');
         }
     }
 
@@ -163,8 +162,8 @@ class MeetingController extends Controller
             return redirect()->route('meetings.index')->with('success', 'Meeting deleted successfully.');
         } catch (\Throwable $e) {
             DB::rollBack();
-            return redirect()->route('meetings.index')->with('error', 'Failed to delete meeting.');
             report($e);
+            return redirect()->route('meetings.index')->with('error', 'Failed to delete meeting.');
         }
     }
 }

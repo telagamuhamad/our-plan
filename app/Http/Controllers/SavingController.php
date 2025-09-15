@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\SavingRequest;
 use App\Mail\SavingTransferMail;
 use App\Services\SavingService;
+use App\Services\SavingTransactionService;
 use App\Services\UserService;
 use Exception;
 use Illuminate\Http\Request;
@@ -15,11 +16,13 @@ class SavingController extends Controller
 {
     protected $service;
     protected $userService;
+    protected $savingTransactionService;
 
-    public function __construct(SavingService $service, UserService $userService)
+    public function __construct(SavingService $service, UserService $userService, SavingTransactionService $savingTransactionService)
     {
         $this->service = $service;
         $this->userService = $userService;
+        $this->savingTransactionService = $savingTransactionService;
     }
 
     public function index()
@@ -60,8 +63,10 @@ class SavingController extends Controller
             return back()->with('error', 'Saving not found.');
         }
 
+        $savingTransactions = $this->savingTransactionService->getTransactionsBySavingId($saving->id);
         return view('savings.show', [
-            'saving' => $saving
+            'saving' => $saving,
+            'savingTransactions' => $savingTransactions
         ]);
     }
 
@@ -88,7 +93,7 @@ class SavingController extends Controller
             return redirect()->route('savings.index')->with('success', 'Saving created successfully.');
         } catch (Exception $e) {
             DB::rollBack();
-            // report($e);
+            report($e);
             return back()->with('error', 'Something went wrong.');
         }
     }
@@ -123,7 +128,7 @@ class SavingController extends Controller
             return redirect()->route('savings.index')->with('success', 'Saving updated successfully.');
         } catch (Exception $e) {
             DB::rollBack();
-            // report($e);
+            report($e);
             return back()->with('error', 'Something went wrong.');
         }
     }
@@ -181,7 +186,7 @@ class SavingController extends Controller
             return redirect()->route('savings.index')->with('success', 'Transfer successful.');
         } catch (Exception $e) {
             DB::rollBack();
-            // report($e);
+            report($e);
             // return back()->with('error', 'Something went wrong.');
             return back()->with('error', $e->getMessage());
         }

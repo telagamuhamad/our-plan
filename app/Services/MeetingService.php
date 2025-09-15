@@ -38,8 +38,9 @@ class MeetingService {
     {
         $meeting = $this->repository->findMeetingById($meetingId);
 
-        if ($meeting->travelling_user_id !== Auth::id()) {
-            abort(403);
+        $formattedUserId = (string) Auth::id();
+        if ($meeting->travelling_user_id !== $formattedUserId) {
+            throw new Exception('You are not authorized to update this meeting.');
         }
 
         return $this->repository->updateMeeting($meeting, $data);
@@ -48,9 +49,9 @@ class MeetingService {
     public function deleteMeeting($meetingId)
     {
         $meeting = $this->repository->findMeetingById($meetingId);
-dd($meeting, $meeting->travelling_user_id, Auth::id());
-        if ($meeting->travelling_user_id !== Auth::id()) {
-            abort(403);
+        $formattedUserId = (string) Auth::id();
+        if ($meeting->travelling_user_id !== $formattedUserId) {
+            throw new Exception('You are not authorized to delete this meeting.');
         }
 
         return $this->repository->deleteMeeting($meeting);

@@ -52,13 +52,14 @@
         <div class="alert alert-warning">Belum ada transaksi.</div>
     @else
         <ul class="list-group">
-            @foreach ($saving->transactions as $transaction)
+            @foreach ($savingTransactions as $transaction)
                 <li class="list-group-item d-flex justify-content-between align-items-center">
                     <div>
                         <span class="badge 
                             {{ $transaction->type === 'deposit' ? 'bg-success' : ($transaction->type === 'withdrawal' ? 'bg-danger' : 'bg-secondary') }}">
                             {{ ucfirst($transaction->type) }}
                         </span>
+                        <strong>{{ $transaction->user->name ?? 'Unknown' }}</strong>
                         Rp {{ number_format($transaction->amount, 0, ',', '.') }} 
                         @if ($transaction->note) 
                             – <em>{{ $transaction->note }}</em>

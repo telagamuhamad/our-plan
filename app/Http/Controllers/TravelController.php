@@ -80,7 +80,7 @@ class TravelController extends Controller
             return redirect()->route('travels.index')->with('success', 'Travel created successfully.');
         } catch (Exception $e) {
             DB::rollBack();
-            // report($e);
+            report($e);
             return redirect()->route('travels.index')->with('error', 'Failed to create travel.');
         }
     }
@@ -116,7 +116,7 @@ class TravelController extends Controller
 
         } catch (Exception $e) {
             DB::rollBack();
-            // report($e);
+            report($e);
             return redirect()->route('travels.index')->with('error', 'Failed to update travel.');
         }
     }
@@ -133,7 +133,7 @@ class TravelController extends Controller
             return redirect()->route('travels.index')->with('success', 'Travel deleted successfully.');
         } catch (Exception $e) {
             DB::rollBack();
-            // report($e);
+            report($e);
             return redirect()->route('travels.index')->with('error', 'Failed to delete travel.');
         }
     }
@@ -167,7 +167,7 @@ class TravelController extends Controller
             
         } catch (Exception $e) {
             DB::rollBack();
-            // report($e);
+            report($e);
             // return redirect()->back()->with('error', 'Failed to assign Travel Planner to Meeting.');
             return redirect()->back()->with('error', $e->getMessage());
         }
@@ -193,7 +193,7 @@ class TravelController extends Controller
             return redirect()->back()->with('success', 'Travel Planner berhasil dihapus dari Meeting.');
         } catch (Exception $e) {
             DB::rollBack();
-            // report($e);
+            report($e);
             return redirect()->back()->with('error', 'Failed to remove Travel Planner from Meeting.');
         }
     }
@@ -219,7 +219,7 @@ class TravelController extends Controller
             return redirect()->back()->with('success', 'Travel Planner berhasil diselesaikan.');
         } catch (Exception $e) {
             DB::rollBack();
-            // report($e);
+            report($e);
             return redirect()->back()->with('error', 'Failed to complete Travel Planner.');
         }
     }
