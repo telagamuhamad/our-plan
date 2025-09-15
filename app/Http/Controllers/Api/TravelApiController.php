@@ -83,7 +83,7 @@ class TravelApiController extends Controller
             ], 200);
         } catch (Exception $e) {
             DB::rollBack();
-            report($e);
+            // report($e);
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to create travel.',
@@ -114,7 +114,7 @@ class TravelApiController extends Controller
 
         } catch (Exception $e) {
             DB::rollBack();
-            report($e);
+            // report($e);
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to update travel.',
@@ -138,7 +138,7 @@ class TravelApiController extends Controller
             ], 200);
         } catch (Exception $e) {
             DB::rollBack();
-            report($e);
+            // report($e);
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to delete travel.',
@@ -186,7 +186,7 @@ class TravelApiController extends Controller
             
         } catch (Exception $e) {
             DB::rollBack();
-            report($e);
+            // report($e);
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to assign Travel Planner to Meeting.',
@@ -218,7 +218,7 @@ class TravelApiController extends Controller
             ], 200);
         } catch (Exception $e) {
             DB::rollBack();
-            report($e);
+            // report($e);
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to remove Travel Planner from Meeting.',
@@ -251,7 +251,7 @@ class TravelApiController extends Controller
             ], 200);
         } catch (Exception $e) {
             DB::rollBack();
-            report($e);
+            // report($e);
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to complete Travel Planner.',
@@ -302,7 +302,7 @@ class TravelApiController extends Controller
             ], 200);
         } catch (Exception $e) {
             DB::rollBack();
-            report($e);
+            // report($e);
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to update Visit Date.',

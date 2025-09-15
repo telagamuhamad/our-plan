@@ -88,7 +88,7 @@ class SavingController extends Controller
             return redirect()->route('savings.index')->with('success', 'Saving created successfully.');
         } catch (Exception $e) {
             DB::rollBack();
-            report($e);
+            // report($e);
             return back()->with('error', 'Something went wrong.');
         }
     }
@@ -123,7 +123,7 @@ class SavingController extends Controller
             return redirect()->route('savings.index')->with('success', 'Saving updated successfully.');
         } catch (Exception $e) {
             DB::rollBack();
-            report($e);
+            // report($e);
             return back()->with('error', 'Something went wrong.');
         }
     }
@@ -181,7 +181,7 @@ class SavingController extends Controller
             return redirect()->route('savings.index')->with('success', 'Transfer successful.');
         } catch (Exception $e) {
             DB::rollBack();
-            report($e);
+            // report($e);
             // return back()->with('error', 'Something went wrong.');
             return back()->with('error', $e->getMessage());
         }
