@@ -163,7 +163,8 @@ class MeetingController extends Controller
         } catch (Exception $e) {
             DB::rollBack();
             // report($e);
-            return redirect()->route('meetings.index')->with('error', 'Failed to delete meeting.');
+            // return redirect()->route('meetings.index')->with('error', 'Failed to delete meeting.');
+            return redirect()->route('meetings.index')->with('error', $e->getMessage());
         }
     }
 }
