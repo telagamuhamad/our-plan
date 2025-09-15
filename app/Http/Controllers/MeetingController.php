@@ -159,17 +159,12 @@ class MeetingController extends Controller
             foreach ($allUsers as $user) {
                 Mail::to($user->email)->send(new MeetingCancellationMail($meeting, $user->name));
             }
-
-            throw new \Exception('Test error message from production');
             
-        //     return redirect()->route('meetings.index')->with('success', 'Meeting deleted successfully.');
+            return redirect()->route('meetings.index')->with('success', 'Meeting deleted successfully.');
         } catch (\Throwable $e) {
             DB::rollBack();
-            dd($e);
-            Log::error($e->getMessage());
-            return redirect()->route('meetings.index')->with('error', 'Error: ' . $e->getMessage());
-            // report($e);
-            // return redirect()->route('meetings.index')->with('error', $e->getMessage());
+            return redirect()->route('meetings.index')->with('error', 'Failed to delete meeting.');
+            report($e);
         }
     }
 }

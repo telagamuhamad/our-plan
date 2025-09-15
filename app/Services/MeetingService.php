@@ -48,7 +48,7 @@ class MeetingService {
     public function deleteMeeting($meetingId)
     {
         $meeting = $this->repository->findMeetingById($meetingId);
-
+dd($meeting);
         if ($meeting->travelling_user_id !== Auth::id()) {
             abort(403);
         }
