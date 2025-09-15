@@ -163,7 +163,7 @@ class MeetingController extends Controller
             
         //     return redirect()->route('meetings.index')->with('success', 'Meeting deleted successfully.');
         } catch (\Throwable $e) {
-            DB::rollBack();
+            // DB::rollBack();
             return redirect()->route('meetings.index')->with('error', 'Error: ' . $e->getMessage());
             // report($e);
             // return redirect()->route('meetings.index')->with('error', $e->getMessage());
