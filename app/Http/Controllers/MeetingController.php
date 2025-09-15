@@ -155,9 +155,9 @@ class MeetingController extends Controller
             DB::commit();
 
             $allUsers = $this->userService->getAllUser();
-            foreach ($allUsers as $user) {
-                Mail::to($user->email)->send(new MeetingCancellationMail($meeting, $user->name));
-            }
+            // foreach ($allUsers as $user) {
+            //     Mail::to($user->email)->send(new MeetingCancellationMail($meeting, $user->name));
+            // }
             
             return redirect()->route('meetings.index')->with('success', 'Meeting deleted successfully.');
         } catch (\Throwable $e) {
