@@ -13,6 +13,7 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
 class MeetingController extends Controller
@@ -163,7 +164,9 @@ class MeetingController extends Controller
             
         //     return redirect()->route('meetings.index')->with('success', 'Meeting deleted successfully.');
         } catch (\Throwable $e) {
-            // DB::rollBack();
+            DB::rollBack();
+            dd($e);
+            Log::error($e->getMessage());
             return redirect()->route('meetings.index')->with('error', 'Error: ' . $e->getMessage());
             // report($e);
             // return redirect()->route('meetings.index')->with('error', $e->getMessage());
