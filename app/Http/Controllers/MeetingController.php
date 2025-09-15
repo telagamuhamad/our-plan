@@ -146,25 +146,33 @@ class MeetingController extends Controller
     public function destroy($meetingId)
     {
         try {
-            DB::beginTransaction();
-
-            $meeting = $this->service->findMeetingById($meetingId);
-
-            $this->service->deleteMeeting($meetingId);
+            // Test simple exception dulu
+            throw new \Exception('Test error message from production');
             
-            DB::commit();
-
-            $allUsers = $this->userService->getAllUser();
-            // foreach ($allUsers as $user) {
-            //     Mail::to($user->email)->send(new MeetingCancellationMail($meeting, $user->name));
-            // }
-            
-            return redirect()->route('meetings.index')->with('success', 'Meeting deleted successfully.');
+            // ... kode sebelumnya
         } catch (\Throwable $e) {
-            DB::rollBack();
-            // report($e);
-            return redirect()->route('meetings.index')->with('error', 'Failed to delete meeting. ' . $e->getMessage() . 'message');
-            // return redirect()->route('meetings.index')->with('error', $e->getMessage());
+            return redirect()->route('meetings.index')->with('error', 'Error: ' . $e->getMessage());
         }
+        // try {
+        //     DB::beginTransaction();
+
+        //     $meeting = $this->service->findMeetingById($meetingId);
+
+        //     $this->service->deleteMeeting($meetingId);
+            
+        //     DB::commit();
+
+        //     $allUsers = $this->userService->getAllUser();
+        //     // foreach ($allUsers as $user) {
+        //     //     Mail::to($user->email)->send(new MeetingCancellationMail($meeting, $user->name));
+        //     // }
+            
+        //     return redirect()->route('meetings.index')->with('success', 'Meeting deleted successfully.');
+        // } catch (\Throwable $e) {
+        //     DB::rollBack();
+        //     // report($e);
+        //     return redirect()->route('meetings.index')->with('error', 'Failed to delete meeting. ' . $e->getMessage() . 'message');
+        //     // return redirect()->route('meetings.index')->with('error', $e->getMessage());
+        // }
     }
 }
