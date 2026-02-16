@@ -94,6 +94,13 @@ class DailyMoodService
             'is_updated' => true,
         ]);
 
+        // Notify partner about mood update
+        $user = $mood->user;
+        $couple = $user->couple;
+        if ($couple && $couple->isActive()) {
+            $this->notifyPartnerUpdate($couple, $user, $mood);
+        }
+
         return $mood->fresh();
     }
 
@@ -157,6 +164,31 @@ class DailyMoodService
             'type' => 'mood_check_in',
             'title' => 'Mood Check-in Baru',
             'message' => "{$user->name} baru saja check-in mood: {$mood->mood_emoji}",
+            'data' => json_encode([
+                'mood_id' => $mood->id,
+                'mood' => $mood->mood,
+                'mood_emoji' => $mood->mood_emoji,
+            ]),
+            'is_read' => false,
+        ]);
+    }
+
+    /**
+     * Notify partner about mood update.
+     */
+    protected function notifyPartnerUpdate(Couple $couple, User $user, DailyMoodCheckIn $mood): void
+    {
+        $partner = $couple->getPartner($user);
+        if (!$partner) {
+            return;
+        }
+
+        Notification::create([
+            'user_id' => $partner->id,
+            'couple_id' => $couple->id,
+            'type' => 'mood_update',
+            'title' => 'Mood Diupdate',
+            'message' => "{$user->name} mengupdate mood menjadi: {$mood->mood_emoji}",
             'data' => json_encode([
                 'mood_id' => $mood->id,
                 'mood' => $mood->mood,

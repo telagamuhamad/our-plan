@@ -179,14 +179,17 @@
         </div>
     </div>
 </div>
+@endsection
 
-<!-- Update Mood Modal -->
+<!-- Update Mood Modal - placed in modals stack to avoid z-index issues with glass-container -->
+@push('modals')
 @if($hasCheckedIn)
 <div class="modal fade" id="updateMoodModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
             <form action="{{ route('mood.update') }}" method="POST">
                 @csrf
+                @method('PUT')
                 <input type="hidden" name="mood_id" value="{{ $myTodayMood->id }}">
 
                 <div class="modal-header">
@@ -219,7 +222,7 @@
     </div>
 </div>
 @endif
-@endsection
+@endpush
 
 <style>
     .mood-options {
