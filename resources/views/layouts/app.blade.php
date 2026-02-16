@@ -1,6 +1,7 @@
 @php
     $routeName = Route::currentRouteName();
     $backgrounds = [
+        'pairing.*' => 'bg-pairing.jpg',
         'meetings.*' => 'bg-meetings.jpg',
         'travels.*' => 'bg-travels.jpg',
         'savings.*' => 'bg-savings.jpg',
@@ -105,17 +106,28 @@
             @auth
                 @php
                     $routeName = Route::currentRouteName();
+                    $userHasActiveCouple = Auth::user()->hasActiveCouple();
                 @endphp
-    
+
                 <div class="d-flex flex-wrap gap-2 align-items-center ms-auto">
                     @if (str_contains($routeName, 'meetings') || str_contains($routeName, 'travels') || str_contains($routeName, 'savings'))
                         <span class="me-2 fw-semibold text-primary">
                             👋 Hai, {{ Auth::user()->name }}
                         </span>
                     @endif
-    
-                    <a class="btn btn-outline-primary" href="{{ route('dashboard') }}">Dashboard</a>
-    
+
+                    <a class="btn btn-outline-primary" href="{{ route('pairing.status') }}">
+                        @if($userHasActiveCouple)
+                            Pasangan
+                        @else
+                            Pairing
+                        @endif
+                    </a>
+
+                    @if($userHasActiveCouple)
+                        <a class="btn btn-outline-primary" href="{{ route('dashboard') }}">Dashboard</a>
+                    @endif
+
                     <form action="{{ route('logout') }}" method="POST" class="d-inline">
                         @csrf
                         <button class="btn btn-outline-danger">Logout</button>

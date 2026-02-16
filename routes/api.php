@@ -1,10 +1,12 @@
 <?php
 
 use App\Http\Controllers\Api\AuthApiController;
+use App\Http\Controllers\Api\CoupleApiController;
 use App\Http\Controllers\Api\MeetingApiController;
 use App\Http\Controllers\Api\SavingApiController;
 use App\Http\Controllers\Api\SavingTransactionApiController;
 use App\Http\Controllers\Api\TravelApiController;
+use App\Http\Resources\UserResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -19,18 +21,37 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-// Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-//     return $request->user();
-// });
-
+// Public routes
+Route::post('/register', [AuthApiController::class, 'register'])->name('register');
 Route::post('/login', [AuthApiController::class, 'login'])->name('login');
-Route::post('/logout', [AuthApiController::class, 'logout'])->name('logout');
 
+// Protected routes (require authentication)
 Route::middleware('auth:sanctum')->group(function () {
+    // Auth
+    Route::post('/logout', [AuthApiController::class, 'logout'])->name('logout');
     Route::get('/user', function (Request $request) {
-        return $request->user();
+        return new UserResource($request->user());
     });
 
+    // Pairing Routes
+    Route::prefix('pairing')->group(function () {
+        Route::post('/create-invite', [CoupleApiController::class, 'createInviteCode'])
+            ->middleware('pairing.throttle:3,10');
+
+        Route::post('/join', [CoupleApiController::class, 'joinCouple'])
+            ->middleware('pairing.throttle:5,10');
+
+        Route::get('/status', [CoupleApiController::class, 'getStatus']);
+
+        Route::post('/confirm', [CoupleApiController::class, 'confirmPairing']);
+
+        Route::post('/leave', [CoupleApiController::class, 'leaveCouple']);
+
+        Route::get('/', [CoupleApiController::class, 'show']);
+    });
+
+    // Routes that require active couple membership
+    Route::middleware('belongs.to.couple')->group(function () {
         // Meetings
         Route::prefix('meetings')->group(function () {
             Route::get('index', [MeetingApiController::class, 'index'])->name('meetings.index');
@@ -39,7 +60,7 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::put('update/{meetingId}', [MeetingApiController::class, 'update'])->name('meetings.update');
             Route::delete('destroy/{meetingId}', [MeetingApiController::class, 'destroy'])->name('meetings.destroy');
         });
-    
+
         // Travels
         Route::prefix('travels')->group(function () {
             Route::get('index', [TravelApiController::class, 'index'])->name('travels.index');
@@ -55,7 +76,7 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::get('get-unassigned-travels', [TravelApiController::class, 'getUnassignedTravels'])->name('travels.get-unassigned-travels');
             Route::put('update-visit-date/{travelId}', [TravelApiController::class, 'updateVisitDate'])->name('travels.update-visit-date');
         });
-    
+
         // Savings
         Route::prefix('savings')->group(function () {
             Route::get('index', [SavingApiController::class, 'index'])->name('savings.index');
@@ -66,4 +87,5 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::post('{savingId}/transactions', [SavingTransactionApiController::class, 'store'])->name('savings.transactions.store');
             Route::post('/transfer', [SavingApiController::class, 'transfer'])->name('savings.transfer');
         });
+    });
 });

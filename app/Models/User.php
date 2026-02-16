@@ -21,6 +21,9 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'couple_id',
+        'avatar_url',
+        'timezone',
     ];
 
     /**
@@ -42,4 +45,81 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+
+    /**
+     * Get the couple that the user belongs to.
+     */
+    public function couple()
+    {
+        return $this->belongsTo(Couple::class);
+    }
+
+    /**
+     * Get the partner of this user.
+     */
+    public function partner()
+    {
+        if (!$this->couple) {
+            return null;
+        }
+        return $this->couple->getPartner($this);
+    }
+
+    /**
+     * Check if the user has an active couple.
+     */
+    public function hasActiveCouple(): bool
+    {
+        return $this->couple && $this->couple->isActive();
+    }
+
+    /**
+     * Check if the user is user one in the couple.
+     */
+    public function isUserOne(): bool
+    {
+        return $this->couple && $this->couple->user_one_id === $this->id;
+    }
+
+    /**
+     * Check if the user is user two in the couple.
+     */
+    public function isUserTwo(): bool
+    {
+        return $this->couple && $this->couple->user_two_id === $this->id;
+    }
+
+    /**
+     * Check if the user belongs to any couple (pending or active).
+     */
+    public function hasCouple(): bool
+    {
+        return $this->couple !== null;
+    }
+
+    /**
+     * Scope to get users without a couple.
+     */
+    public function scopeWithoutCouple($query)
+    {
+        return $query->whereNull('couple_id');
+    }
+
+    /**
+     * Scope to get users with a couple.
+     */
+    public function scopeWithCouple($query)
+    {
+        return $query->whereNotNull('couple_id');
+    }
+
+    /**
+     * Scope to get users with an active couple.
+     */
+    public function scopeWithActiveCouple($query)
+    {
+        return $query->whereHas('couple', function ($query) {
+            $query->where('status', 'active');
+        });
+    }
 }
