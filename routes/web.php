@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CoupleController;
+use App\Http\Controllers\DailyMoodController;
 use App\Http\Controllers\MeetingController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\SavingController;
@@ -128,6 +129,14 @@ Route::middleware(['auth'])->group(function () {
             Route::post('mark-read/{notificationId}', [NotificationController::class, 'markAsRead'])->name('notifications.mark-read');
             Route::post('mark-all-read', [NotificationController::class, 'markAllAsRead'])->name('notifications.mark-all-read');
             Route::delete('destroy/{notificationId}', [NotificationController::class, 'destroy'])->name('notifications.destroy');
+        });
+
+        // Mood Check-In
+        Route::prefix('mood')->group(function () {
+            Route::get('/', [DailyMoodController::class, 'index'])->name('mood.index');
+            Route::post('/check-in', [DailyMoodController::class, 'checkIn'])->name('mood.check-in');
+            Route::put('/update', [DailyMoodController::class, 'update'])->name('mood.update');
+            Route::get('/stats', [DailyMoodController::class, 'stats'])->name('mood.stats');
         });
     });
 });

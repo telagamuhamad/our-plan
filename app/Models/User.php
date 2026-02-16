@@ -170,4 +170,20 @@ class User extends Authenticatable
     {
         return $this->unreadNotifications()->count();
     }
+
+    /**
+     * Get mood check-ins for the user.
+     */
+    public function moodCheckIns()
+    {
+        return $this->hasMany(DailyMoodCheckIn::class)->orderBy('check_in_date', 'desc');
+    }
+
+    /**
+     * Get today's mood check-in for the user.
+     */
+    public function todayMoodCheckIn()
+    {
+        return $this->hasOne(DailyMoodCheckIn::class)->where('check_in_date', today()->toDateString());
+    }
 }

@@ -3,6 +3,7 @@
     $backgrounds = [
         'pairing.*' => 'bg-pairing.jpg',
         'timeline.*' => 'bg-timeline.jpg',
+        'mood.*' => 'bg-timeline.jpg',
         'notifications.*' => 'bg-timeline.jpg',
         'meetings.*' => 'bg-meetings.jpg',
         'travels.*' => 'bg-travels.jpg',
@@ -235,6 +236,7 @@
                         </a>
 
                         <a class="btn @if(str_contains($routeName, 'timeline')) btn-primary @else btn-outline-primary @endif" href="{{ route('timeline.index') }}">Timeline</a>
+                        <a class="btn @if(str_contains($routeName, 'mood')) btn-primary @else btn-outline-primary @endif" href="{{ route('mood.index') }}">Mood</a>
                         <a class="btn btn-outline-primary" href="{{ route('dashboard') }}">Dashboard</a>
                     @endif
 

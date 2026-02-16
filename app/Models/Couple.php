@@ -67,6 +67,22 @@ class Couple extends Model
     }
 
     /**
+     * Get all mood check-ins for this couple.
+     */
+    public function moodCheckIns()
+    {
+        return $this->hasMany(DailyMoodCheckIn::class)->orderBy('check_in_date', 'desc');
+    }
+
+    /**
+     * Get today's mood check-ins for this couple.
+     */
+    public function todayMoodCheckIns()
+    {
+        return $this->hasMany(DailyMoodCheckIn::class)->where('check_in_date', today()->toDateString());
+    }
+
+    /**
      * Scope to filter pending couples.
      */
     public function scopePending($query)

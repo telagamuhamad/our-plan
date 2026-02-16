@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AuthApiController;
 use App\Http\Controllers\Api\CoupleApiController;
+use App\Http\Controllers\Api\DailyMoodApiController;
 use App\Http\Controllers\Api\MeetingApiController;
 use App\Http\Controllers\Api\SavingApiController;
 use App\Http\Controllers\Api\SavingTransactionApiController;
@@ -101,6 +102,16 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::post('comment/{postId}', [TimelineApiController::class, 'comment'])->name('timeline.comment');
             Route::get('comments/{postId}', [TimelineApiController::class, 'comments'])->name('timeline.comments');
             Route::delete('comment/{commentId}', [TimelineApiController::class, 'deleteComment'])->name('timeline.delete-comment');
+        });
+
+        // Mood Check-In
+        Route::prefix('mood')->group(function () {
+            Route::get('/', [DailyMoodApiController::class, 'index'])->name('mood.index');
+            Route::post('/', [DailyMoodApiController::class, 'store'])->name('mood.store');
+            Route::get('/today', [DailyMoodApiController::class, 'today'])->name('mood.today');
+            Route::get('/stats', [DailyMoodApiController::class, 'stats'])->name('mood.stats');
+            Route::put('/{id}', [DailyMoodApiController::class, 'update'])->name('mood.update');
+            Route::delete('/{id}', [DailyMoodApiController::class, 'destroy'])->name('mood.destroy');
         });
     });
 });
