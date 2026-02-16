@@ -59,6 +59,14 @@ class Couple extends Model
     }
 
     /**
+     * Get all timeline posts for this couple.
+     */
+    public function timelinePosts()
+    {
+        return $this->hasMany(TimelinePost::class)->orderBy('posted_at', 'desc');
+    }
+
+    /**
      * Scope to filter pending couples.
      */
     public function scopePending($query)

@@ -3,8 +3,10 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CoupleController;
 use App\Http\Controllers\MeetingController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\SavingController;
 use App\Http\Controllers\SavingTransactionController;
+use App\Http\Controllers\TimelineController;
 use App\Http\Controllers\TravelController;
 use Illuminate\Support\Facades\Route;
 
@@ -101,6 +103,31 @@ Route::middleware(['auth'])->group(function () {
             Route::post('{savingId}/transactions', [SavingTransactionController::class, 'store'])->name('savings.transactions.store');
             Route::get('/transfer', [SavingController::class, 'showTransferForm'])->name('savings.transfer.form');
             Route::post('/transfer', [SavingController::class, 'transfer'])->name('savings.transfer');
+        });
+
+        // Timeline
+        Route::prefix('timeline')->group(function () {
+            Route::get('index', [TimelineController::class, 'index'])->name('timeline.index');
+            Route::get('create', [TimelineController::class, 'create'])->name('timeline.create');
+            Route::post('store', [TimelineController::class, 'store'])->name('timeline.store');
+            Route::get('show/{postId}', [TimelineController::class, 'show'])->name('timeline.show');
+            Route::get('edit/{postId}', [TimelineController::class, 'edit'])->name('timeline.edit');
+            Route::put('update/{postId}', [TimelineController::class, 'update'])->name('timeline.update');
+            Route::delete('destroy/{postId}', [TimelineController::class, 'destroy'])->name('timeline.destroy');
+            Route::post('react/{postId}', [TimelineController::class, 'react'])->name('timeline.react');
+            Route::delete('unreact/{postId}', [TimelineController::class, 'unreact'])->name('timeline.unreact');
+            Route::post('comment/{postId}', [TimelineController::class, 'comment'])->name('timeline.comment');
+            Route::delete('comment/{commentId}', [TimelineController::class, 'deleteComment'])->name('timeline.delete-comment');
+            Route::get('load-more', [TimelineController::class, 'loadMore'])->name('timeline.load-more');
+        });
+
+        // Notifications
+        Route::prefix('notifications')->group(function () {
+            Route::get('index', [NotificationController::class, 'index'])->name('notifications.index');
+            Route::get('unread-count', [NotificationController::class, 'unreadCount'])->name('notifications.unread-count');
+            Route::post('mark-read/{notificationId}', [NotificationController::class, 'markAsRead'])->name('notifications.mark-read');
+            Route::post('mark-all-read', [NotificationController::class, 'markAllAsRead'])->name('notifications.mark-all-read');
+            Route::delete('destroy/{notificationId}', [NotificationController::class, 'destroy'])->name('notifications.destroy');
         });
     });
 });

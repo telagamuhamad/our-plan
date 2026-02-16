@@ -122,4 +122,52 @@ class User extends Authenticatable
             $query->where('status', 'active');
         });
     }
+
+    /**
+     * Get timeline posts created by the user.
+     */
+    public function timelinePosts()
+    {
+        return $this->hasMany(TimelinePost::class, 'user_id');
+    }
+
+    /**
+     * Get reactions made by the user.
+     */
+    public function postReactions()
+    {
+        return $this->hasMany(PostReaction::class);
+    }
+
+    /**
+     * Get comments made by the user.
+     */
+    public function postComments()
+    {
+        return $this->hasMany(PostComment::class);
+    }
+
+    /**
+     * Get notifications for the user.
+     */
+    public function notifications()
+    {
+        return $this->hasMany(Notification::class)->orderBy('created_at', 'desc');
+    }
+
+    /**
+     * Get unread notifications for the user.
+     */
+    public function unreadNotifications()
+    {
+        return $this->hasMany(Notification::class)->unread()->orderBy('created_at', 'desc');
+    }
+
+    /**
+     * Get unread notifications count.
+     */
+    public function unreadNotificationsCount(): int
+    {
+        return $this->unreadNotifications()->count();
+    }
 }

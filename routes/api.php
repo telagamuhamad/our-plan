@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\CoupleApiController;
 use App\Http\Controllers\Api\MeetingApiController;
 use App\Http\Controllers\Api\SavingApiController;
 use App\Http\Controllers\Api\SavingTransactionApiController;
+use App\Http\Controllers\Api\TimelineApiController;
 use App\Http\Controllers\Api\TravelApiController;
 use App\Http\Resources\UserResource;
 use Illuminate\Http\Request;
@@ -86,6 +87,20 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::delete('destroy/{savingId}', [SavingApiController::class, 'destroy'])->name('savings.destroy');
             Route::post('{savingId}/transactions', [SavingTransactionApiController::class, 'store'])->name('savings.transactions.store');
             Route::post('/transfer', [SavingApiController::class, 'transfer'])->name('savings.transfer');
+        });
+
+        // Timeline
+        Route::prefix('timeline')->group(function () {
+            Route::get('index', [TimelineApiController::class, 'index'])->name('timeline.index');
+            Route::get('show/{postId}', [TimelineApiController::class, 'show'])->name('timeline.show');
+            Route::post('store', [TimelineApiController::class, 'store'])->name('timeline.store');
+            Route::post('update/{postId}', [TimelineApiController::class, 'update'])->name('timeline.update');
+            Route::delete('destroy/{postId}', [TimelineApiController::class, 'destroy'])->name('timeline.destroy');
+            Route::post('react/{postId}', [TimelineApiController::class, 'react'])->name('timeline.react');
+            Route::delete('unreact/{postId}', [TimelineApiController::class, 'unreact'])->name('timeline.unreact');
+            Route::post('comment/{postId}', [TimelineApiController::class, 'comment'])->name('timeline.comment');
+            Route::get('comments/{postId}', [TimelineApiController::class, 'comments'])->name('timeline.comments');
+            Route::delete('comment/{commentId}', [TimelineApiController::class, 'deleteComment'])->name('timeline.delete-comment');
         });
     });
 });
