@@ -109,7 +109,7 @@ class CoupleApiController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Pairing berhasil dikonfirmasi.',
+                'message' => 'Pairing berhasil! Selamat datang.',
                 'data' => new CoupleResource($couple),
             ], 200);
         } catch (Exception $e) {
@@ -130,7 +130,7 @@ class CoupleApiController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Anda telah keluar dari pasangan.',
+                'message' => 'Pasangan telah dihapus. Kedua user sekarang sudah terunpair.',
             ], 200);
         } catch (Exception $e) {
             return response()->json([

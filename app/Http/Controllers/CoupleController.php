@@ -135,7 +135,7 @@ class CoupleController extends Controller
             $this->pairingService->leaveCouple($user);
 
             return redirect()->route('dashboard')
-                ->with('success', 'Anda telah keluar dari pasangan.');
+                ->with('success', 'Pasangan telah dihapus. Kedua user sekarang sudah terunpair.');
         } catch (Exception $e) {
             return back()->with('error', 'Gagal keluar dari pasangan.');
         }
