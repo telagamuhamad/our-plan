@@ -26,7 +26,7 @@ class EnsureUserBelongsToCouple
                 ], 403);
             }
 
-            return redirect()->route('pairing.status')
+            return redirect()->route('dashboard')
                 ->with('error', 'Anda harus terhubung dengan pasangan terlebih dahulu.');
         }
 

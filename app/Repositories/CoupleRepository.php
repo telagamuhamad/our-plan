@@ -141,6 +141,7 @@ class CoupleRepository
 
     /**
      * Remove user from couple (leave couple).
+     * When any user leaves, both users are unpaired and the couple is deleted.
      */
     public function leaveCouple(User $user): bool
     {
@@ -153,21 +154,16 @@ class CoupleRepository
             return false;
         }
 
-        // If user is user one, delete the entire couple
-        if ($couple->user_one_id === $user->id) {
-            if ($couple->userTwo) {
-                $couple->userTwo->update(['couple_id' => null]);
-            }
-            $couple->delete();
-        } else {
-            // If user is user two, just remove them
-            $user->update(['couple_id' => null]);
-            $couple->update(['user_two_id' => null, 'user_two_confirmed_at' => null]);
+        // Nullify couple_id for both users
+        if ($couple->userOne) {
+            $couple->userOne->update(['couple_id' => null]);
+        }
+        if ($couple->userTwo) {
+            $couple->userTwo->update(['couple_id' => null]);
         }
 
-        $user->update(['couple_id' => null]);
-
-        return true;
+        // Delete the couple entirely
+        return $couple->delete();
     }
 
     /**

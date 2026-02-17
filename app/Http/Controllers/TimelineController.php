@@ -34,7 +34,7 @@ class TimelineController extends Controller
                 'user' => Auth::user(),
             ]);
         } catch (Exception $e) {
-            return redirect()->route('pairing.status')
+            return redirect()->route('dashboard')
                 ->with('error', 'Anda harus terhubung dengan pasangan untuk melihat timeline.');
         }
     }

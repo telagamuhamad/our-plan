@@ -24,7 +24,7 @@ class MissingYouController extends Controller
         $couple = $user?->couple;
 
         if (!$couple || !$couple->isActive()) {
-            return redirect()->route('pairing.status')
+            return redirect()->route('dashboard')
                 ->with('error', 'Anda belum memiliki pasangan aktif');
         }
 

@@ -26,8 +26,8 @@ class CoupleController extends Controller
     {
         $user = Auth::user();
 
-        if ($user->couple_id) {
-            return redirect()->route('pairing.status');
+        if ($user->hasActiveCouple()) {
+            return redirect()->route('dashboard');
         }
 
         return view('pairing.create-invite', compact('user'));
@@ -55,8 +55,8 @@ class CoupleController extends Controller
     {
         $user = Auth::user();
 
-        if ($user->couple_id) {
-            return redirect()->route('pairing.status');
+        if ($user->hasActiveCouple()) {
+            return redirect()->route('dashboard');
         }
 
         return view('pairing.join', compact('user'));
@@ -88,6 +88,12 @@ class CoupleController extends Controller
     public function showStatus()
     {
         $user = Auth::user();
+
+        // If user has active couple, redirect to dashboard
+        if ($user->hasActiveCouple()) {
+            return redirect()->route('dashboard');
+        }
+
         $coupleInfo = $this->pairingService->getCoupleInfo($user);
 
         return view('pairing.status', [
@@ -107,8 +113,8 @@ class CoupleController extends Controller
                 Auth::user()
             );
 
-            return redirect()->route('pairing.status')
-                ->with('success', 'Pairing berhasil dikonfirmasi!');
+            return redirect()->route('dashboard')
+                ->with('success', 'Pairing berhasil! Selamat datang di Dashboard!');
         } catch (Exception $e) {
             return back()->with('error', $e->getMessage());
         }
@@ -128,7 +134,7 @@ class CoupleController extends Controller
         try {
             $this->pairingService->leaveCouple($user);
 
-            return redirect()->route('pairing.create-invite')
+            return redirect()->route('dashboard')
                 ->with('success', 'Anda telah keluar dari pasangan.');
         } catch (Exception $e) {
             return back()->with('error', 'Gagal keluar dari pasangan.');

@@ -41,7 +41,7 @@ class AuthController extends Controller
 
         Auth::login($user);
 
-        return redirect()->route('pairing.status');
+        return redirect()->route('dashboard');
     }
 
     public function login(Request $request)
@@ -62,7 +62,7 @@ class AuthController extends Controller
         ];
 
         if (Auth::attempt($credentials)) {
-            return redirect()->intended(route('pairing.status'));
+            return redirect()->intended(route('dashboard'));
         }
 
         return back()->withErrors(['login' => 'Username/Email atau password salah']);
