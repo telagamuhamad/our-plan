@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CoupleController;
 use App\Http\Controllers\DailyMoodController;
 use App\Http\Controllers\MeetingController;
+use App\Http\Controllers\MissingYouController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\SavingController;
 use App\Http\Controllers\SavingTransactionController;
@@ -137,6 +138,14 @@ Route::middleware(['auth'])->group(function () {
             Route::post('/check-in', [DailyMoodController::class, 'checkIn'])->name('mood.check-in');
             Route::put('/update', [DailyMoodController::class, 'update'])->name('mood.update');
             Route::get('/stats', [DailyMoodController::class, 'stats'])->name('mood.stats');
+        });
+
+        // Missing You
+        Route::prefix('missing-you')->group(function () {
+            Route::get('/', [MissingYouController::class, 'index'])->name('missing-you.index');
+            Route::post('/send', [MissingYouController::class, 'send'])->name('missing-you.send');
+            Route::get('/status', [MissingYouController::class, 'status'])->name('missing-you.status');
+            Route::get('/templates', [MissingYouController::class, 'templates'])->name('missing-you.templates');
         });
     });
 });

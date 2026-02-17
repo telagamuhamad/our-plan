@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\AuthApiController;
 use App\Http\Controllers\Api\CoupleApiController;
 use App\Http\Controllers\Api\DailyMoodApiController;
 use App\Http\Controllers\Api\MeetingApiController;
+use App\Http\Controllers\Api\MissingYouController;
 use App\Http\Controllers\Api\SavingApiController;
 use App\Http\Controllers\Api\SavingTransactionApiController;
 use App\Http\Controllers\Api\TimelineApiController;
@@ -112,6 +113,14 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::get('/stats', [DailyMoodApiController::class, 'stats'])->name('mood.stats');
             Route::put('/{id}', [DailyMoodApiController::class, 'update'])->name('mood.update');
             Route::delete('/{id}', [DailyMoodApiController::class, 'destroy'])->name('mood.destroy');
+        });
+
+        // Missing You
+        Route::prefix('missing-you')->group(function () {
+            Route::get('/', [MissingYouController::class, 'index'])->name('missing-you.index');
+            Route::post('/', [MissingYouController::class, 'store'])->name('missing-you.store');
+            Route::get('/status', [MissingYouController::class, 'status'])->name('missing-you.status');
+            Route::get('/templates', [MissingYouController::class, 'templates'])->name('missing-you.templates');
         });
     });
 });

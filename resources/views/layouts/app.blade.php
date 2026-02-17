@@ -5,6 +5,7 @@
         'timeline.*' => 'bg-timeline.jpg',
         'mood.*' => 'bg-timeline.jpg',
         'notifications.*' => 'bg-timeline.jpg',
+        'missing-you.*' => 'bg-timeline.jpg',
         'meetings.*' => 'bg-meetings.jpg',
         'travels.*' => 'bg-travels.jpg',
         'savings.*' => 'bg-savings.jpg',
@@ -233,6 +234,11 @@
                             @if($unreadCount > 0)
                                 <span class="badge bg-danger notification-badge">{{ $unreadCount > 9 ? '9+' : $unreadCount }}</span>
                             @endif
+                        </a>
+
+                        <!-- Missing You Quick Button -->
+                        <a class="btn btn-danger text-white hover-shadow" href="{{ route('missing-you.index') }}">
+                            💕 Missing You
                         </a>
 
                         <a class="btn @if(str_contains($routeName, 'timeline')) btn-primary @else btn-outline-primary @endif" href="{{ route('timeline.index') }}">Timeline</a>
