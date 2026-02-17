@@ -12,6 +12,7 @@
         'meetings.*' => 'bg-meetings.jpg',
         'travels.*' => 'bg-travels.jpg',
         'savings.*' => 'bg-savings.jpg',
+        'profile.*' => 'bg-pairing.jpg',
     ];
 
     $bgImage = 'default.jpg'; // fallback default
@@ -213,9 +214,36 @@
                 @endphp
 
                 <div class="d-flex flex-wrap gap-2 align-items-center ms-auto">
-                    <span class="me-2 fw-semibold text-primary d-none d-lg-block">
-                        👋 Hai, {{ Auth::user()->name }}
-                    </span>
+                    <!-- Profile Dropdown -->
+                    <div class="dropdown">
+                        <a class="d-flex align-items-center text-decoration-none dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            @if(Auth::user()->avatar_url)
+                                <img src="{{ Auth::user()->avatar_url }}" alt="{{ Auth::user()->name }}" class="rounded-circle me-2" style="width: 32px; height: 32px; object-fit: cover;">
+                            @else
+                                <div class="rounded-circle bg-primary d-inline-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px; font-size: 0.875rem; color: white;">
+                                    {{ substr(Auth::user()->name, 0, 1) }}
+                                </div>
+                            @endif
+                            <span class="fw-semibold text-primary d-none d-lg-block">{{ Auth::user()->name }}</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            @php
+                                $displayUsername = Auth::user()->username;
+                            @endphp
+                            <li><h6 class="dropdown-header"><span>@</span>{{ $displayUsername }}</h6></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item" href="{{ route('profile.edit') }}">
+                                    <i class="bi bi-person"></i> Edit Profil
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                                    <i class="bi bi-box-arrow-right"></i> Logout
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
 
                     @if($userHasActiveCouple)
                         <!-- Notification Bell -->
@@ -241,10 +269,6 @@
                             <i class="bi bi-link-45deg"></i> Pairing
                         </a>
                     @endif
-
-                    <a href="#" class="btn btn-outline-danger logout-btn" data-url="{{ route('logout') }}">
-                        <i class="bi bi-box-arrow-right"></i> Logout
-                    </a>
                 </div>
             @endauth
         </div>
@@ -280,18 +304,9 @@
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-    <!-- Logout handler -->
+    <!-- Leave pairing handler -->
     <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const logoutBtn = document.querySelector('.logout-btn');
-        const logoutForm = document.getElementById('logout-form');
-        if (logoutBtn && logoutForm) {
-            logoutBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                logoutForm.submit();
-            });
-        }
-
         const leavePairingBtn = document.querySelector('.leave-pairing-btn');
         const leavePairingForm = document.getElementById('leave-pairing-form');
         if (leavePairingBtn && leavePairingForm) {

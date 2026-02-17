@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\Controller;
 use App\Http\Controllers\CoupleController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DailyMoodController;
@@ -8,6 +9,7 @@ use App\Http\Controllers\GoalController;
 use App\Http\Controllers\MeetingController;
 use App\Http\Controllers\MissingYouController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\QuestionController;
 use App\Http\Controllers\SavingController;
 use App\Http\Controllers\SavingTransactionController;
@@ -67,6 +69,15 @@ Route::middleware(['auth'])->group(function () {
 
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    // Profile Routes
+    Route::prefix('profile')->group(function () {
+        Route::get('/edit', [ProfileController::class, 'edit'])->name('profile.edit');
+        Route::put('/update', [ProfileController::class, 'update'])->name('profile.update');
+        Route::put('/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
+        Route::post('/avatar', [ProfileController::class, 'updateAvatar'])->name('profile.avatar');
+        Route::post('/avatar/remove', [ProfileController::class, 'removeAvatar'])->name('profile.avatar.remove');
+    });
 
     // Routes that require active couple membership
     Route::middleware('belongs.to.couple')->group(function () {

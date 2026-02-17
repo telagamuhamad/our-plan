@@ -126,6 +126,19 @@
             </div>
 
             <div class="mb-3">
+                <label for="username" class="form-label fw-semibold">Username</label>
+                <input type="text"
+                       name="username"
+                       id="username"
+                       class="form-control"
+                       placeholder="Username untuk login"
+                       pattern="[a-zA-Z0-9_]+"
+                       value="{{ old('username') }}"
+                       required>
+                <div class="form-text small">Hanya huruf, angka, dan underscore</div>
+            </div>
+
+            <div class="mb-3">
                 <label for="email" class="form-label fw-semibold">Email</label>
                 <input type="email"
                        name="email"
