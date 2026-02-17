@@ -67,6 +67,7 @@
                     <h5 class="card-title mb-4">📝 Informasi Profil</h5>
                     <form method="POST" action="{{ route('profile.update') }}">
                         @csrf
+                        @method('PUT')
                         <div class="mb-3">
                             <label for="name" class="form-label">Nama</label>
                             <input type="text" class="form-control @error('name') is-invalid @enderror"
@@ -109,6 +110,7 @@
                     <h5 class="card-title mb-4">🔒 Ganti Password</h5>
                     <form method="POST" action="{{ route('profile.password') }}">
                         @csrf
+                        @method('PUT')
                         <div class="mb-3">
                             <label for="current_password" class="form-label">Password Saat Ini</label>
                             <input type="password" class="form-control @error('current_password') is-invalid @enderror"

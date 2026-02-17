@@ -3,163 +3,186 @@
 @section('title', 'Dashboard')
 
 @section('content')
-<div class="dashboard-page">
-    <div class="container py-5">
-        <h1 class="fw-bold display-5 text-center mb-2">
-            Selamat Datang, <span class="text-primary">{{ Auth::user()->name }}</span>! 🎉
-        </h1>
-        <p class="text-center text-muted mb-5">
-            Yuk, atur rencana dan impian kalian bersama di sini ✨
-        </p>
+@php
+    $user = Auth::user();
+    $partner = $user->partner();
+@endphp
 
-        <!-- Core Features -->
-        <h5 class="mb-3 text-muted">💕 Core Features</h5>
-        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mb-5">
-            <!-- Timeline -->
-            <div class="col">
-                <div class="card h-100 shadow-sm border-0 hover-shadow transition">
-                    <div class="card-body text-center">
-                        <div class="mb-3">
-                            <span class="display-6">📰</span>
-                        </div>
-                        <h5 class="card-title">Timeline</h5>
-                        <p class="card-text text-muted small">Bagikan momen bersama.</p>
-                        <a href="{{ route('timeline.index') }}" class="btn btn-outline-primary w-100">
-                            <i class="bi bi-image"></i> Timeline
-                        </a>
-                    </div>
-                </div>
-            </div>
+<div class="container py-5">
+    @if (session('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
 
-            <!-- Mood Check-In -->
-            <div class="col">
-                <div class="card h-100 shadow-sm border-0 hover-shadow transition">
-                    <div class="card-body text-center">
-                        <div class="mb-3">
-                            <span class="display-6">😊</span>
-                        </div>
-                        <h5 class="card-title">Daily Mood</h5>
-                        <p class="card-text text-muted small">Cek-in mood harian.</p>
-                        <a href="{{ route('mood.index') }}" class="btn btn-outline-primary w-100">
-                            <i class="bi bi-emoji-smile"></i> Mood
-                        </a>
-                    </div>
-                </div>
-            </div>
+    <!-- Header with Partner Info -->
+    @if($partner)
+        <div class="text-center mb-4">
+            <div class="display-1 mb-3">💕</div>
+            <h2 class="fw-bold">Halo, {{ $user->name }}!</h2>
+            <p class="text-muted">
+                Anda dan <strong>{{ $partner->name }}</strong> sudah terhubung
+            </p>
+        </div>
 
-            <!-- Questions -->
-            <div class="col">
-                <div class="card h-100 shadow-sm border-0 hover-shadow transition">
-                    <div class="card-body text-center">
-                        <div class="mb-3">
-                            <span class="display-6">❓</span>
-                        </div>
-                        <h5 class="card-title">Question of the Day</h5>
-                        <p class="card-text text-muted small">Pertanyaan harian.</p>
-                        <a href="{{ route('questions.index') }}" class="btn btn-outline-primary w-100">
-                            <i class="bi bi-chat-dots"></i> Questions
-                        </a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Goals & Tasks -->
-            <div class="col">
-                <div class="card h-100 shadow-sm border-0 hover-shadow transition">
-                    <div class="card-body text-center">
-                        <div class="mb-3">
-                            <span class="display-6">🎯</span>
-                        </div>
-                        <h5 class="card-title">Goals & Tasks</h5>
-                        <p class="card-text text-muted small">Wujudkan impian bersama.</p>
-                        <a href="{{ route('goals.index') }}" class="btn btn-outline-primary w-100">
-                            <i class="bi bi-list-check"></i> Goals
-                        </a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Missing You -->
-            <div class="col">
-                <div class="card h-100 shadow-sm border-0 hover-shadow transition border-danger">
-                    <div class="card-body text-center">
-                        <div class="mb-3">
-                            <span class="display-6">💕</span>
-                        </div>
-                        <h5 class="card-title">Missing You</h5>
-                        <p class="card-text text-muted small">Kirim rindu ke pasangan.</p>
-                        <a href="{{ route('missing-you.index') }}" class="btn btn-danger w-100">
-                            <i class="bi bi-heart"></i> Send Love
-                        </a>
+        <!-- Partner Card -->
+        <div class="row justify-content-center mb-5">
+            <div class="col-md-6">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4 text-center">
+                        @if($partner->avatar_url)
+                            <img src="{{ $partner->avatar_url }}"
+                                 alt="{{ $partner->name }}"
+                                 class="rounded-circle mb-3"
+                                 style="width: 80px; height: 80px; object-fit: cover;">
+                        @else
+                            <div class="rounded-circle bg-primary d-inline-flex align-items-center justify-content-center mb-3"
+                                 style="width: 80px; height: 80px; font-size: 2rem; color: white;">
+                                {{ substr($partner->name, 0, 1) }}
+                            </div>
+                        @endif
+                        <h5 class="fw-bold mb-1">{{ $partner->name }}</h5>
+                        <p class="text-muted small mb-0">{{ $partner->username }}</p>
+                        <p class="text-muted small mb-0">Timezone: {{ $partner->timezone }}</p>
                     </div>
                 </div>
             </div>
         </div>
+    @else
+        <div class="text-center mb-4">
+            <div class="display-1 mb-3">👋</div>
+            <h2 class="fw-bold">Halo, {{ $user->name }}!</h2>
+            <p class="text-muted">
+                Mulai hubungkan dengan pasangan untuk menikmati semua fitur
+            </p>
+        </div>
+    @endif
 
-        <!-- Planning Features -->
-        <h5 class="mb-3 text-muted">📅 Planning Features</h5>
-        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-            <!-- Meeting Planner -->
-            <div class="col">
-                <div class="card h-100 shadow-sm border-0 hover-shadow transition">
-                    <div class="card-body text-center">
-                        <div class="mb-3">
-                            <span class="display-6">📅</span>
-                        </div>
-                        <h5 class="card-title">Pertemuan</h5>
-                        <p class="card-text text-muted small">Atur jadwal pertemuan.</p>
-                        <a href="{{ route('meetings.index') }}" class="btn btn-outline-primary w-100">
-                            <i class="bi bi-calendar-event"></i> Meetings
-                        </a>
-                    </div>
-                </div>
-            </div>
+    <!-- Core Features -->
+    <h5 class="mb-3 text-center text-muted">💕 Core Features</h5>
+    <div class="row row-cols-2 row-cols-md-3 row-cols-lg-5 g-3 mb-4">
+        <!-- Timeline -->
+        <div class="col">
+            <a href="{{ route('timeline.index') }}"
+               class="btn btn-primary w-100 h-100 d-flex flex-column justify-content-center"
+               style="border-radius: 12px; padding: 1.5rem; min-height: 100px;">
+                <span class="fs-2">📰</span>
+                <span class="fw-semibold mt-2 small">Timeline</span>
+            </a>
+        </div>
 
-            <!-- Travel Planner -->
-            <div class="col">
-                <div class="card h-100 shadow-sm border-0 hover-shadow transition">
-                    <div class="card-body text-center">
-                        <div class="mb-3">
-                            <span class="display-6">✈️</span>
-                        </div>
-                        <h5 class="card-title">Perjalanan</h5>
-                        <p class="card-text text-muted small">Rencanakan kunjungan.</p>
-                        <a href="{{ route('travels.index') }}" class="btn btn-outline-primary w-100">
-                            <i class="bi bi-airplane"></i> Travels
-                        </a>
-                    </div>
-                </div>
-            </div>
+        <!-- Mood Check-In -->
+        <div class="col">
+            <a href="{{ route('mood.index') }}"
+               class="btn btn-primary w-100 h-100 d-flex flex-column justify-content-center"
+               style="border-radius: 12px; padding: 1.5rem; min-height: 100px;">
+                <span class="fs-2">😊</span>
+                <span class="fw-semibold mt-2 small">Mood</span>
+            </a>
+        </div>
 
-            <!-- Savings Tracker -->
-            <div class="col">
-                <div class="card h-100 shadow-sm border-0 hover-shadow transition">
-                    <div class="card-body text-center">
-                        <div class="mb-3">
-                            <span class="display-6">💰</span>
-                        </div>
-                        <h5 class="card-title">Tabungan</h5>
-                        <p class="card-text text-muted small">Pantau tabungan bersama.</p>
-                        <a href="{{ route('savings.index') }}" class="btn btn-outline-primary w-100">
-                            <i class="bi bi-piggy-bank"></i> Savings
-                        </a>
-                    </div>
-                </div>
-            </div>
+        <!-- Questions -->
+        <div class="col">
+            <a href="{{ route('questions.index') }}"
+               class="btn btn-primary w-100 h-100 d-flex flex-column justify-content-center"
+               style="border-radius: 12px; padding: 1.5rem; min-height: 100px;">
+                <span class="fs-2">❓</span>
+                <span class="fw-semibold mt-2 small">Questions</span>
+            </a>
+        </div>
+
+        <!-- Goals & Tasks -->
+        <div class="col">
+            <a href="{{ route('goals.index') }}"
+               class="btn btn-primary w-100 h-100 d-flex flex-column justify-content-center"
+               style="border-radius: 12px; padding: 1.5rem; min-height: 100px;">
+                <span class="fs-2">🎯</span>
+                <span class="fw-semibold mt-2 small">Goals</span>
+            </a>
+        </div>
+
+        <!-- Missing You -->
+        <div class="col">
+            <a href="{{ route('missing-you.index') }}"
+               class="btn btn-danger w-100 h-100 d-flex flex-column justify-content-center"
+               style="border-radius: 12px; padding: 1.5rem; min-height: 100px;">
+                <span class="fs-2">💕</span>
+                <span class="fw-semibold mt-2 small">Missing You</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Planning Features -->
+    <h5 class="mb-3 text-center text-muted">📅 Planning Features</h5>
+    <div class="row row-cols-2 row-cols-md-3 g-3">
+        <!-- Meeting Planner -->
+        <div class="col">
+            <a href="{{ route('meetings.index') }}"
+               class="btn btn-outline-primary w-100 h-100 d-flex flex-column justify-content-center"
+               style="border-radius: 12px; padding: 1.5rem; min-height: 100px;">
+                <span class="fs-2">📅</span>
+                <span class="fw-semibold mt-2 small">Pertemuan</span>
+            </a>
+        </div>
+
+        <!-- Travel Planner -->
+        <div class="col">
+            <a href="{{ route('travels.index') }}"
+               class="btn btn-outline-primary w-100 h-100 d-flex flex-column justify-content-center"
+               style="border-radius: 12px; padding: 1.5rem; min-height: 100px;">
+                <span class="fs-2">✈️</span>
+                <span class="fw-semibold mt-2 small">Perjalanan</span>
+            </a>
+        </div>
+
+        <!-- Savings Tracker -->
+        <div class="col">
+            <a href="{{ route('savings.index') }}"
+               class="btn btn-outline-primary w-100 h-100 d-flex flex-column justify-content-center"
+               style="border-radius: 12px; padding: 1.5rem; min-height: 100px;">
+                <span class="fs-2">💰</span>
+                <span class="fw-semibold mt-2 small">Tabungan</span>
+            </a>
         </div>
     </div>
 </div>
 
 <style>
-    .hover-shadow:hover {
-        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+    .card {
+        border-radius: 12px;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        transition: all 0.2s ease;
+    }
+
+    .btn-primary:hover {
         transform: translateY(-3px);
+        box-shadow: 0 5px 20px rgba(102, 126, 234, 0.3);
     }
-    .transition {
-        transition: all 0.2s ease-in-out;
+
+    .btn-outline-primary {
+        border-width: 2px;
+        transition: all 0.2s ease;
     }
-    .dashboard-page {
-        background: transparent !important;
+
+    .btn-outline-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 3px 15px rgba(102, 126, 234, 0.2);
+    }
+
+    .btn-danger {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        border: none;
+        transition: all 0.2s ease;
+    }
+
+    .btn-danger:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 20px rgba(245, 87, 108, 0.3);
     }
 </style>
 @endsection
