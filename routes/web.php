@@ -3,12 +3,14 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CoupleController;
 use App\Http\Controllers\DailyMoodController;
+use App\Http\Controllers\GoalController;
 use App\Http\Controllers\MeetingController;
 use App\Http\Controllers\MissingYouController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\QuestionController;
 use App\Http\Controllers\SavingController;
 use App\Http\Controllers\SavingTransactionController;
+use App\Http\Controllers\TaskController;
 use App\Http\Controllers\TimelineController;
 use App\Http\Controllers\TravelController;
 use Illuminate\Support\Facades\Route;
@@ -155,6 +157,35 @@ Route::middleware(['auth'])->group(function () {
             Route::post('/answer', [QuestionController::class, 'answer'])->name('questions.answer');
             Route::put('/update', [QuestionController::class, 'update'])->name('questions.update');
             Route::get('/{date}', [QuestionController::class, 'show'])->name('questions.show');
+        });
+
+        // Goals
+        Route::prefix('goals')->group(function () {
+            Route::get('/', [GoalController::class, 'index'])->name('goals.index');
+            Route::get('/create', [GoalController::class, 'create'])->name('goals.create');
+            Route::post('/', [GoalController::class, 'store'])->name('goals.store');
+            Route::get('/stats', [GoalController::class, 'stats'])->name('goals.stats');
+            Route::get('/{id}', [GoalController::class, 'show'])->name('goals.show');
+            Route::get('/{id}/edit', [GoalController::class, 'edit'])->name('goals.edit');
+            Route::put('/{id}', [GoalController::class, 'update'])->name('goals.update');
+            Route::delete('/{id}', [GoalController::class, 'destroy'])->name('goals.destroy');
+            Route::post('/{id}/mark-completed', [GoalController::class, 'markCompleted'])->name('goals.mark-completed');
+            Route::post('/{id}/mark-in-progress', [GoalController::class, 'markInProgress'])->name('goals.mark-in-progress');
+        });
+
+        // Tasks
+        Route::prefix('tasks')->group(function () {
+            Route::get('/', [TaskController::class, 'index'])->name('tasks.index');
+            Route::get('/create', [TaskController::class, 'create'])->name('tasks.create');
+            Route::post('/', [TaskController::class, 'store'])->name('tasks.store');
+            Route::get('/stats', [TaskController::class, 'stats'])->name('tasks.stats');
+            Route::get('/pending', [TaskController::class, 'pending'])->name('tasks.pending');
+            Route::get('/my-tasks', [TaskController::class, 'myTasks'])->name('tasks.my-tasks');
+            Route::get('/{id}', [TaskController::class, 'show'])->name('tasks.show');
+            Route::get('/{id}/edit', [TaskController::class, 'edit'])->name('tasks.edit');
+            Route::put('/{id}', [TaskController::class, 'update'])->name('tasks.update');
+            Route::post('/toggle/{id}', [TaskController::class, 'toggle'])->name('tasks.toggle');
+            Route::delete('/{id}', [TaskController::class, 'destroy'])->name('tasks.destroy');
         });
     });
 });

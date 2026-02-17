@@ -3,11 +3,13 @@
 use App\Http\Controllers\Api\AuthApiController;
 use App\Http\Controllers\Api\CoupleApiController;
 use App\Http\Controllers\Api\DailyMoodApiController;
+use App\Http\Controllers\Api\GoalController;
 use App\Http\Controllers\Api\MeetingApiController;
 use App\Http\Controllers\Api\MissingYouController;
 use App\Http\Controllers\Api\QuestionController;
 use App\Http\Controllers\Api\SavingApiController;
 use App\Http\Controllers\Api\SavingTransactionApiController;
+use App\Http\Controllers\Api\TaskController;
 use App\Http\Controllers\Api\TimelineApiController;
 use App\Http\Controllers\Api\TravelApiController;
 use App\Http\Resources\UserResource;
@@ -133,6 +135,30 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::get('/stats', [QuestionController::class, 'stats'])->name('questions.stats');
             Route::get('/categories', [QuestionController::class, 'categories'])->name('questions.categories');
             Route::get('/{date}', [QuestionController::class, 'show'])->name('questions.show');
+        });
+
+        // Goals
+        Route::prefix('goals')->group(function () {
+            Route::get('/', [GoalController::class, 'index'])->name('goals.index');
+            Route::post('/', [GoalController::class, 'store'])->name('goals.store');
+            Route::get('/stats', [GoalController::class, 'stats'])->name('goals.stats');
+            Route::get('/upcoming', [GoalController::class, 'upcoming'])->name('goals.upcoming');
+            Route::get('/{id}', [GoalController::class, 'show'])->name('goals.show');
+            Route::put('/{id}', [GoalController::class, 'update'])->name('goals.update');
+            Route::delete('/{id}', [GoalController::class, 'destroy'])->name('goals.destroy');
+        });
+
+        // Tasks
+        Route::prefix('tasks')->group(function () {
+            Route::get('/', [TaskController::class, 'index'])->name('tasks.index');
+            Route::post('/', [TaskController::class, 'store'])->name('tasks.store');
+            Route::get('/pending', [TaskController::class, 'pending'])->name('tasks.pending');
+            Route::get('/my-tasks', [TaskController::class, 'myTasks'])->name('tasks.my-tasks');
+            Route::get('/stats', [TaskController::class, 'stats'])->name('tasks.stats');
+            Route::get('/{id}', [TaskController::class, 'show'])->name('tasks.show');
+            Route::put('/{id}', [TaskController::class, 'update'])->name('tasks.update');
+            Route::post('/toggle/{id}', [TaskController::class, 'toggle'])->name('tasks.toggle');
+            Route::delete('/{id}', [TaskController::class, 'destroy'])->name('tasks.destroy');
         });
     });
 });
