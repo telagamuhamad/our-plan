@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\CoupleApiController;
 use App\Http\Controllers\Api\DailyMoodApiController;
 use App\Http\Controllers\Api\MeetingApiController;
 use App\Http\Controllers\Api\MissingYouController;
+use App\Http\Controllers\Api\QuestionController;
 use App\Http\Controllers\Api\SavingApiController;
 use App\Http\Controllers\Api\SavingTransactionApiController;
 use App\Http\Controllers\Api\TimelineApiController;
@@ -121,6 +122,17 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::post('/', [MissingYouController::class, 'store'])->name('missing-you.store');
             Route::get('/status', [MissingYouController::class, 'status'])->name('missing-you.status');
             Route::get('/templates', [MissingYouController::class, 'templates'])->name('missing-you.templates');
+        });
+
+        // Question of the Day
+        Route::prefix('questions')->group(function () {
+            Route::get('/', [QuestionController::class, 'index'])->name('questions.index');
+            Route::get('/today', [QuestionController::class, 'today'])->name('questions.today');
+            Route::post('/answer', [QuestionController::class, 'answer'])->name('questions.answer');
+            Route::put('/answer', [QuestionController::class, 'updateAnswer'])->name('questions.update-answer');
+            Route::get('/stats', [QuestionController::class, 'stats'])->name('questions.stats');
+            Route::get('/categories', [QuestionController::class, 'categories'])->name('questions.categories');
+            Route::get('/{date}', [QuestionController::class, 'show'])->name('questions.show');
         });
     });
 });

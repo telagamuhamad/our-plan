@@ -6,6 +6,7 @@ use App\Http\Controllers\DailyMoodController;
 use App\Http\Controllers\MeetingController;
 use App\Http\Controllers\MissingYouController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\QuestionController;
 use App\Http\Controllers\SavingController;
 use App\Http\Controllers\SavingTransactionController;
 use App\Http\Controllers\TimelineController;
@@ -146,6 +147,14 @@ Route::middleware(['auth'])->group(function () {
             Route::post('/send', [MissingYouController::class, 'send'])->name('missing-you.send');
             Route::get('/status', [MissingYouController::class, 'status'])->name('missing-you.status');
             Route::get('/templates', [MissingYouController::class, 'templates'])->name('missing-you.templates');
+        });
+
+        // Question of the Day
+        Route::prefix('questions')->group(function () {
+            Route::get('/', [QuestionController::class, 'index'])->name('questions.index');
+            Route::post('/answer', [QuestionController::class, 'answer'])->name('questions.answer');
+            Route::put('/update', [QuestionController::class, 'update'])->name('questions.update');
+            Route::get('/{date}', [QuestionController::class, 'show'])->name('questions.show');
         });
     });
 });
