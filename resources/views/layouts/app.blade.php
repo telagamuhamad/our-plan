@@ -213,19 +213,9 @@
                 @endphp
 
                 <div class="d-flex flex-wrap gap-2 align-items-center ms-auto">
-                    @if (str_contains($routeName, 'timeline') || str_contains($routeName, 'meetings') || str_contains($routeName, 'travels') || str_contains($routeName, 'savings') || str_contains($routeName, 'notifications'))
-                        <span class="me-2 fw-semibold text-primary">
-                            👋 Hai, {{ Auth::user()->name }}
-                        </span>
-                    @endif
-
-                    <a class="btn btn-outline-primary" href="{{ route('pairing.status') }}">
-                        @if($userHasActiveCouple)
-                            Pasangan
-                        @else
-                            Pairing
-                        @endif
-                    </a>
+                    <span class="me-2 fw-semibold text-primary d-none d-lg-block">
+                        👋 Hai, {{ Auth::user()->name }}
+                    </span>
 
                     @if($userHasActiveCouple)
                         <!-- Notification Bell -->
@@ -239,19 +229,22 @@
                             @endif
                         </a>
 
-                        <!-- Missing You Quick Button -->
-                        <a class="btn btn-danger text-white hover-shadow" href="{{ route('missing-you.index') }}">
-                            💕 Missing You
+                        <a class="btn btn-primary" href="{{ route('dashboard') }}">
+                            <i class="bi bi-grid"></i> Dashboard
                         </a>
 
-                        <a class="btn @if(str_contains($routeName, 'timeline')) btn-primary @else btn-outline-primary @endif" href="{{ route('timeline.index') }}">Timeline</a>
-                        <a class="btn @if(str_contains($routeName, 'mood')) btn-primary @else btn-outline-primary @endif" href="{{ route('mood.index') }}">Mood</a>
-                        <a class="btn @if(str_contains($routeName, 'questions')) btn-primary @else btn-outline-primary @endif" href="{{ route('questions.index') }}">Questions</a>
-                        <a class="btn @if(str_contains($routeName, 'goals') || str_contains($routeName, 'tasks')) btn-primary @else btn-outline-primary @endif" href="{{ route('goals.index') }}">Goals</a>
-                        <a class="btn btn-outline-primary" href="{{ route('dashboard') }}">Dashboard</a>
+                        <a href="#" class="btn btn-outline-warning leave-pairing-btn" data-url="{{ route('pairing.leave') }}">
+                            <i class="bi bi-heartbreak"></i> Unpair
+                        </a>
+                    @else
+                        <a class="btn btn-outline-primary" href="{{ route('pairing.status') }}">
+                            <i class="bi bi-link-45deg"></i> Pairing
+                        </a>
                     @endif
 
-                    <a href="#" class="btn btn-outline-danger logout-btn" data-url="{{ route('logout') }}">Logout</a>
+                    <a href="#" class="btn btn-outline-danger logout-btn" data-url="{{ route('logout') }}">
+                        <i class="bi bi-box-arrow-right"></i> Logout
+                    </a>
                 </div>
             @endauth
         </div>
@@ -260,6 +253,11 @@
     <!-- Hidden logout form -->
     @auth
         <form id="logout-form" method="POST" action="{{ route('logout') }}" class="d-none">
+            @csrf
+        </form>
+
+        <!-- Hidden leave pairing form -->
+        <form id="leave-pairing-form" method="POST" action="{{ route('pairing.leave') }}" class="d-none">
             @csrf
         </form>
     @endauth    
@@ -291,6 +289,17 @@
             logoutBtn.addEventListener('click', function(e) {
                 e.preventDefault();
                 logoutForm.submit();
+            });
+        }
+
+        const leavePairingBtn = document.querySelector('.leave-pairing-btn');
+        const leavePairingForm = document.getElementById('leave-pairing-form');
+        if (leavePairingBtn && leavePairingForm) {
+            leavePairingBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                if (confirm('Apakah Anda yakin ingin keluar dari pasangan?')) {
+                    leavePairingForm.submit();
+                }
             });
         }
     });

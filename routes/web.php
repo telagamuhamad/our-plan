@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CoupleController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DailyMoodController;
 use App\Http\Controllers\GoalController;
 use App\Http\Controllers\MeetingController;
@@ -64,10 +65,8 @@ Route::middleware(['auth'])->group(function () {
             ->name('pairing.leave');
     });
 
-    // Dashboard (redirects to pairing status if no couple)
-    Route::get('/dashboard', function () {
-        return redirect()->route('pairing.status');
-    })->name('dashboard');
+    // Dashboard
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     // Routes that require active couple membership
     Route::middleware('belongs.to.couple')->group(function () {

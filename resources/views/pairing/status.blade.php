@@ -208,15 +208,6 @@
                         </a>
                     </div>
                 </div>
-
-                <div class="text-center mt-4">
-                    <form method="POST" action="{{ route('pairing.leave') }}" class="d-inline">
-                        @csrf
-                        <button type="submit" class="btn btn-link text-danger text-decoration-none small">
-                            Keluar dari pasangan
-                        </button>
-                    </form>
-                </div>
             </div>
         </div>
     @endif
