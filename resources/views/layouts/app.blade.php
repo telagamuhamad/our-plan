@@ -2,17 +2,17 @@
     $routeName = Route::currentRouteName();
     $backgrounds = [
         'pairing.*' => 'bg-pairing.jpg',
-        'timeline.*' => 'bg-timeline.jpg',
-        'mood.*' => 'bg-timeline.jpg',
-        'notifications.*' => 'bg-timeline.jpg',
-        'missing-you.*' => 'bg-timeline.jpg',
-        'questions.*' => 'bg-timeline.jpg',
-        'goals.*' => 'bg-goals.jpg',
-        'tasks.*' => 'bg-tasks.jpg',
+        'timeline.*' => 'bg-meetings.jpg', // using meetings as fallback
+        'mood.*' => 'bg-meetings.jpg',
+        'notifications.*' => 'bg-meetings.jpg',
+        'missing-you.*' => 'bg-meetings.jpg',
+        'questions.*' => 'bg-meetings.jpg',
+        'goals.*' => 'bg-savings.jpg', // using savings as fallback
+        'tasks.*' => 'bg-savings.jpg',
         'meetings.*' => 'bg-meetings.jpg',
         'travels.*' => 'bg-travels.jpg',
         'savings.*' => 'bg-savings.jpg',
-        'profile.*' => 'bg-pairing.jpg',
+        'profile.*' => 'bg-meetings.jpg',
     ];
 
     $bgImage = 'default.jpg'; // fallback default

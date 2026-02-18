@@ -166,6 +166,7 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/', [QuestionController::class, 'index'])->name('questions.index');
             Route::post('/answer', [QuestionController::class, 'answer'])->name('questions.answer');
             Route::put('/update', [QuestionController::class, 'update'])->name('questions.update');
+            Route::post('/answer-mode', [QuestionController::class, 'setAnswerMode'])->name('questions.set-answer-mode');
             Route::get('/{date}', [QuestionController::class, 'show'])->name('questions.show');
         });
 

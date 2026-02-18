@@ -134,6 +134,8 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::put('/answer', [QuestionController::class, 'updateAnswer'])->name('questions.update-answer');
             Route::get('/stats', [QuestionController::class, 'stats'])->name('questions.stats');
             Route::get('/categories', [QuestionController::class, 'categories'])->name('questions.categories');
+            Route::get('/answer-modes', [QuestionController::class, 'answerModes'])->name('questions.answer-modes');
+            Route::post('/answer-mode', [QuestionController::class, 'setAnswerMode'])->name('questions.set-answer-mode');
             Route::get('/{date}', [QuestionController::class, 'show'])->name('questions.show');
         });
 

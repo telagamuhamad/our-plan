@@ -9,6 +9,9 @@ class DailyQuestion extends Model
 {
     use HasFactory;
 
+    public const ANSWER_MODE_APP = 'app';
+    public const ANSWER_MODE_CALL = 'call';
+
     protected $fillable = [
         'couple_id',
         'question_date',
@@ -17,9 +20,11 @@ class DailyQuestion extends Model
         'answer_one',
         'answered_by_one',
         'answered_one_at',
+        'answer_mode_one',
         'answer_two',
         'answered_by_two',
         'answered_two_at',
+        'answer_mode_two',
     ];
 
     protected $casts = [
@@ -103,6 +108,80 @@ class DailyQuestion extends Model
     }
 
     /**
+     * Get answer mode for specific user.
+     */
+    public function getAnswerModeForUser(User $user): string
+    {
+        $couple = $user->couple;
+        if (!$couple) {
+            return self::ANSWER_MODE_APP;
+        }
+
+        if ($couple->isUserOne($user)) {
+            return $this->answer_mode_one ?? self::ANSWER_MODE_APP;
+        }
+
+        if ($couple->isUserTwo($user)) {
+            return $this->answer_mode_two ?? self::ANSWER_MODE_APP;
+        }
+
+        return self::ANSWER_MODE_APP;
+    }
+
+    /**
+     * Set answer mode for specific user.
+     */
+    public function setAnswerModeForUser(User $user, string $mode): bool
+    {
+        if (!in_array($mode, [self::ANSWER_MODE_APP, self::ANSWER_MODE_CALL])) {
+            return false;
+        }
+
+        $couple = $user->couple;
+        if (!$couple) {
+            return false;
+        }
+
+        if ($couple->isUserOne($user)) {
+            $this->answer_mode_one = $mode;
+            // If switching to call mode and has answer, clear the answer
+            if ($mode === self::ANSWER_MODE_CALL && $this->answer_one !== null) {
+                $this->answer_one = null;
+                $this->answered_by_one = null;
+                $this->answered_one_at = null;
+            }
+        } elseif ($couple->isUserTwo($user)) {
+            $this->answer_mode_two = $mode;
+            // If switching to call mode and has answer, clear the answer
+            if ($mode === self::ANSWER_MODE_CALL && $this->answer_two !== null) {
+                $this->answer_two = null;
+                $this->answered_by_two = null;
+                $this->answered_two_at = null;
+            }
+        } else {
+            return false;
+        }
+
+        return $this->save();
+    }
+
+    /**
+     * Check if user can answer via app.
+     */
+    public function canUserAnswerViaApp(User $user): bool
+    {
+        return $this->getAnswerModeForUser($user) === self::ANSWER_MODE_APP;
+    }
+
+    /**
+     * Check if user prefers to answer during call.
+     */
+    public function doesUserPreferCall(User $user): bool
+    {
+        return $this->getAnswerModeForUser($user) === self::ANSWER_MODE_CALL;
+    }
+
+    /**
      * Check if user has answered.
      */
     public function hasUserAnswered(User $user): bool
@@ -116,6 +195,26 @@ class DailyQuestion extends Model
     public function bothAnswered(): bool
     {
         return $this->answer_one !== null && $this->answer_two !== null;
+    }
+
+    /**
+     * Check if both partners prefer call mode.
+     */
+    public function bothPreferCall(): bool
+    {
+        return $this->answer_mode_one === self::ANSWER_MODE_CALL
+            && $this->answer_mode_two === self::ANSWER_MODE_CALL;
+    }
+
+    /**
+     * Get available answer modes.
+     */
+    public static function getAnswerModes(): array
+    {
+        return [
+            self::ANSWER_MODE_APP => 'Jawab Sekarang',
+            self::ANSWER_MODE_CALL => 'Nanti Saat Call',
+        ];
     }
 
     /**
@@ -169,7 +268,7 @@ class DailyQuestion extends Model
                 'Apa arti "committed" buat kamu?',
             ],
             'future' => [
-                'Apa yang paling kamu nanti-nantikan dari ketemuan kita selanjutnya?',
+                'Apa yang paling kamu nanti-nantikan dari ketemuan kita selanjarang ini?',
                 'Apa target bareng yang pengin kita capai tahun ini?',
                 'Kalau bisa bahas rencana 5 tahun ke depan, kamu lihat aku di mana?',
                 'Apa pengalaman baru yang pengin kita coba bareng?',
@@ -210,5 +309,26 @@ class DailyQuestion extends Model
             'question' => $questions[array_rand($questions)],
             'category' => $category ?? array_rand($bank),
         ];
+    }
+
+    /**
+     * Get the answer mode column for a specific user.
+     */
+    protected function getAnswerModeColumnForUser(User $user): ?string
+    {
+        $couple = $user->couple;
+        if (!$couple) {
+            return null;
+        }
+
+        if ($couple->isUserOne($user)) {
+            return 'answer_mode_one';
+        }
+
+        if ($couple->isUserTwo($user)) {
+            return 'answer_mode_two';
+        }
+
+        return null;
     }
 }

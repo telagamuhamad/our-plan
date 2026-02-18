@@ -205,4 +205,54 @@ class QuestionController extends Controller
             ],
         ]);
     }
+
+    /**
+     * Set answer mode preference.
+     */
+    public function setAnswerMode(Request $request): JsonResponse
+    {
+        $request->validate([
+            'question_id' => 'required|integer',
+            'mode' => 'required|in:app,call',
+        ]);
+
+        $user = Auth::user();
+
+        try {
+            $question = DailyQuestion::findOrFail($request->question_id);
+
+            if ($question->couple_id !== $user->couple_id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthorized',
+                ], 403);
+            }
+
+            $question = $this->service->setAnswerMode($question, $user, $request->mode);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Mode jawab berhasil diubah!',
+                'data' => DailyQuestionResource::make($question),
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 400);
+        }
+    }
+
+    /**
+     * Get available answer modes.
+     */
+    public function answerModes(): JsonResponse
+    {
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'modes' => DailyQuestion::getAnswerModes(),
+            ],
+        ]);
+    }
 }

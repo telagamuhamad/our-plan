@@ -123,4 +123,40 @@ class QuestionController extends Controller
             'data' => $question,
         ]);
     }
+
+    /**
+     * Set answer mode preference (AJAX).
+     */
+    public function setAnswerMode(Request $request)
+    {
+        $request->validate([
+            'question_id' => 'required|integer',
+            'mode' => 'required|in:app,call',
+        ]);
+
+        $user = Auth::user();
+
+        try {
+            $question = DailyQuestion::findOrFail($request->question_id);
+
+            if ($question->couple_id !== $user->couple_id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthorized',
+                ], 403);
+            }
+
+            $this->service->setAnswerMode($question, $user, $request->mode);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Mode jawab berhasil diubah!',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 400);
+        }
+    }
 }

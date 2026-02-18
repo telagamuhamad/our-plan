@@ -16,6 +16,28 @@ class DailyQuestionResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        $user = Auth::user();
+        $couple = $user?->couple;
+
+        // Determine which answer mode belongs to current user
+        $myAnswerMode = null;
+        $partnerAnswerMode = null;
+        $canAnswerViaApp = true;
+        $prefersCall = false;
+
+        if ($user && $couple) {
+            $myAnswerMode = $this->getAnswerModeForUser($user);
+            $canAnswerViaApp = $this->canUserAnswerViaApp($user);
+            $prefersCall = $this->doesUserPreferCall($user);
+
+            // Partner's answer mode (without revealing which user is which)
+            if ($couple->isUserOne($user)) {
+                $partnerAnswerMode = $this->answer_mode_two ?? 'app';
+            } else {
+                $partnerAnswerMode = $this->answer_mode_one ?? 'app';
+            }
+        }
+
         return [
             'id' => $this->id,
             'question' => $this->question,
@@ -29,17 +51,25 @@ class DailyQuestionResource extends JsonResource
             'answer_one' => $this->answer_one,
             'answered_by_one' => $this->answered_by_one,
             'answered_one_at' => $this->answered_one_at?->format('Y-m-d H:i:s'),
+            'answer_mode_one' => $this->answer_mode_one,
 
             'answer_two' => $this->answer_two,
             'answered_by_two' => $this->answered_by_two,
             'answered_two_at' => $this->answered_two_at?->format('Y-m-d H:i:s'),
+            'answer_mode_two' => $this->answer_mode_two,
 
             'both_answered' => $this->bothAnswered(),
+            'both_prefer_call' => $this->bothPreferCall(),
 
             // Current user info
-            'my_answer' => Auth::check() ? $this->getAnswerForUser(Auth::user()) : null,
-            'has_answered' => Auth::check() ? $this->hasUserAnswered(Auth::user()) : false,
-            'can_answer' => Auth::check() ? !$this->hasUserAnswered(Auth::user()) && $this->isToday() : false,
+            'my_answer' => $user ? $this->getAnswerForUser($user) : null,
+            'my_answered_at' => $user ? $this->getAnsweredAtForUser($user)?->format('Y-m-d H:i:s') : null,
+            'has_answered' => $user ? $this->hasUserAnswered($user) : false,
+            'my_answer_mode' => $myAnswerMode,
+            'partner_answer_mode' => $partnerAnswerMode,
+            'can_answer_via_app' => $canAnswerViaApp,
+            'prefers_call' => $prefersCall,
+            'can_answer' => $user ? !$this->hasUserAnswered($user) && $this->isToday() && $canAnswerViaApp : false,
 
             'created_at' => $this->created_at?->format('Y-m-d H:i:s'),
 

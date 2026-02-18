@@ -2,6 +2,9 @@
 
 @php
     use App\Models\DailyQuestion;
+    $myAnswerMode = $todayQuestion->getAnswerModeForUser(Auth::user());
+    $canAnswerViaApp = $todayQuestion->canUserAnswerViaApp(Auth::user());
+    $prefersCall = $todayQuestion->doesUserPreferCall(Auth::user());
 @endphp
 
 @section('title', 'Question of the Day - Our Plan')
@@ -52,6 +55,39 @@
                         <h4 class="mb-0 text-center">{{ e($todayQuestion->question) }}</h4>
                     </div>
 
+                    <!-- Answer Mode Selector -->
+                    <div class="answer-mode-selector mb-4 p-3 bg-light rounded-3">
+                        <h6 class="mb-3 small fw-semibold">
+                            <i class="bi bi-gear-fill"></i> Mau jawab bagaimana?
+                        </h6>
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <button type="button"
+                                        class="answer-mode-btn w-100 py-2 rounded-2 border {{ $myAnswerMode === 'app' ? 'border-primary bg-primary text-white' : 'border-secondary bg-white' }}"
+                                        data-mode="app"
+                                        data-question-id="{{ $todayQuestion->id }}">
+                                    <i class="bi bi-keyboard-fill d-block mb-1"></i>
+                                    <small class="fw-semibold">Jawab Sekarang</small>
+                                </button>
+                            </div>
+                            <div class="col-6">
+                                <button type="button"
+                                        class="answer-mode-btn w-100 py-2 rounded-2 border {{ $myAnswerMode === 'call' ? 'border-warning bg-warning text-dark' : 'border-secondary bg-white' }}"
+                                        data-mode="call"
+                                        data-question-id="{{ $todayQuestion->id }}">
+                                    <i class="bi bi-telephone-fill d-block mb-1"></i>
+                                    <small class="fw-semibold">Nanti Call</small>
+                                </button>
+                            </div>
+                        </div>
+                        @if($prefersCall)
+                            <p class="text-muted small mb-0 mt-2 text-center">
+                                <i class="bi bi-info-circle"></i>
+                                Jawaban akan dibahas pas call malam ya!
+                            </p>
+                        @endif
+                    </div>
+
                     <!-- Answer Form -->
                     @if($todayQuestion->hasUserAnswered(Auth::user()))
                         <!-- Already Answered -->
@@ -66,9 +102,16 @@
                         </div>
 
                         <!-- Update Button -->
-                        <button type="button" class="btn btn-sm btn-outline-primary w-100" data-bs-toggle="modal" data-bs-target="#updateAnswerModal">
-                            <i class="bi bi-pencil"></i> Update Jawaban
-                        </button>
+                        @if($canAnswerViaApp)
+                            <button type="button" class="btn btn-sm btn-outline-primary w-100" data-bs-toggle="modal" data-bs-target="#updateAnswerModal">
+                                <i class="bi bi-pencil"></i> Update Jawaban
+                            </button>
+                        @else
+                            <div class="alert alert-info small">
+                                <i class="bi bi-info-circle"></i>
+                                Kamu memilih jawab saat call. Ubah mode dulu untuk update jawaban.
+                            </div>
+                        @endif
 
                         <!-- Partner's Answer -->
                         @if($todayQuestion->bothAnswered())
@@ -94,27 +137,43 @@
                             </div>
                         @endif
                     @else
-                        <!-- Answer Form -->
-                        <form action="{{ route('questions.answer') }}" method="POST" id="answerForm">
-                            @csrf
-                            <div class="mb-3">
-                                <label class="form-label">Jawaban kamu:</label>
-                                <textarea
-                                    name="answer"
-                                    class="form-control"
-                                    rows="5"
-                                    maxlength="1000"
-                                    required
-                                    placeholder="Tulis jawaban kamu di sini..."></textarea>
-                                <div class="form-text">
-                                    <span id="charCount">0</span>/1000 karakter
+                        @if($canAnswerViaApp)
+                            <!-- Answer Form -->
+                            <form action="{{ route('questions.answer') }}" method="POST" id="answerForm">
+                                @csrf
+                                <div class="mb-3">
+                                    <label class="form-label">Jawaban kamu:</label>
+                                    <textarea
+                                        name="answer"
+                                        class="form-control"
+                                        rows="5"
+                                        maxlength="1000"
+                                        required
+                                        placeholder="Tulis jawaban kamu di sini..."></textarea>
+                                    <div class="form-text">
+                                        <span id="charCount">0</span>/1000 karakter
+                                    </div>
                                 </div>
+
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="bi bi-send-fill"></i> Kirim Jawaban
+                                </button>
+                            </form>
+                        @else
+                            <!-- Disabled Form Info -->
+                            <div class="alert alert-warning">
+                                <i class="bi bi-telephone-fill"></i>
+                                <strong>Kamu memilih jawab saat call!</strong>
+                                <p class="mb-0 small mt-2">
+                                    Ubah pilihan di atas ke "Jawab Sekarang" jika mau jawab lewat aplikasi.
+                                </p>
                             </div>
 
-                            <button type="submit" class="btn btn-primary w-100">
-                                <i class="bi bi-send-fill"></i> Kirim Jawaban
-                            </button>
-                        </form>
+                            <div class="text-center py-4 text-muted">
+                                <i class="bi bi-chat-square-text display-4 d-block mb-2 opacity-50"></i>
+                                <small>Form jawaban dinonaktifkan karena kamu memilih menjawab saat call.</small>
+                            </div>
+                        @endif
                     @endif
                 </div>
             </div>
@@ -204,7 +263,7 @@
 @endsection
 
 @push('modals')
-@if($todayQuestion->hasUserAnswered(Auth::user()))
+@if($todayQuestion->hasUserAnswered(Auth::user()) && $canAnswerViaApp)
 <div class="modal fade" id="updateAnswerModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -272,6 +331,54 @@
             updateCharCount.textContent = this.value.length;
         });
     }
+
+    // Answer Mode Selector
+    const answerModeBtns = document.querySelectorAll('.answer-mode-btn');
+
+    answerModeBtns.forEach(btn => {
+        btn.addEventListener('click', async function() {
+            const mode = this.dataset.mode;
+            const questionId = this.dataset.questionId;
+            const container = this.closest('.answer-mode-selector');
+            const otherBtn = container.querySelector(`.answer-mode-btn[data-mode="${mode === 'app' ? 'call' : 'app'}"]`);
+
+            // Show loading state
+            this.disabled = true;
+            const originalContent = this.innerHTML;
+            this.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+
+            try {
+                const response = await fetch('{{ route('questions.set-answer-mode') }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    },
+                    body: JSON.stringify({
+                        question_id: questionId,
+                        mode: mode
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Reload page to reflect changes
+                    window.location.reload();
+                } else {
+                    // Show error
+                    alert(data.message || 'Gagal mengubah mode jawab');
+                    this.innerHTML = originalContent;
+                    this.disabled = false;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Terjadi kesalahan. Silakan coba lagi.');
+                this.innerHTML = originalContent;
+                this.disabled = false;
+            }
+        });
+    });
 </script>
 @endpush
 
@@ -284,6 +391,21 @@
     .my-answer-box {
         background-color: #f8f9fa;
         border-left: 4px solid #198754 !important;
+    }
+
+    .answer-mode-btn {
+        transition: all 0.2s ease;
+        cursor: pointer;
+    }
+
+    .answer-mode-btn:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    .answer-mode-btn:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
     }
 
     .timeline-item-compact:last-child {

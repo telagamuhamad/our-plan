@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Couple;
 use App\Models\DailyQuestion;
+use App\Models\DailyQuestionTemplate;
 use App\Models\User;
 use Exception;
 use Illuminate\Support\Facades\DB;
@@ -22,18 +23,40 @@ class QuestionService
             ->first();
 
         if (!$question) {
-            // Generate new question for today
-            $random = DailyQuestion::getRandomQuestion();
+            // Get question from daily template (AI-generated or fallback)
+            $template = DailyQuestionTemplate::getOrCreateForDate($today);
 
             $question = DailyQuestion::create([
                 'couple_id' => $couple->id,
                 'question_date' => $today,
-                'question' => $random['question'],
-                'category' => $random['category'],
+                'question' => $template->question,
+                'category' => $template->category,
             ]);
         }
 
         return $question;
+    }
+
+    /**
+     * Set answer mode preference for a user.
+     */
+    public function setAnswerMode(DailyQuestion $question, User $user, string $mode): DailyQuestion
+    {
+        if ($question->couple_id !== $user->couple_id) {
+            throw new Exception('Unauthorized access to question');
+        }
+
+        if (!in_array($mode, [DailyQuestion::ANSWER_MODE_APP, DailyQuestion::ANSWER_MODE_CALL])) {
+            throw new Exception('Invalid answer mode');
+        }
+
+        $success = $question->setAnswerModeForUser($user, $mode);
+
+        if (!$success) {
+            throw new Exception('Failed to set answer mode');
+        }
+
+        return $question->fresh();
     }
 
     /**
@@ -43,6 +66,11 @@ class QuestionService
     {
         if ($question->couple_id !== $user->couple_id) {
             throw new Exception('Unauthorized access to question');
+        }
+
+        // Check if user has set answer mode to call
+        if ($question->doesUserPreferCall($user)) {
+            throw new Exception('Kamu memilih untuk menjawab saat call. Ubah mode dulu jika ingin jawab sekarang.');
         }
 
         if ($question->hasUserAnswered($user)) {
@@ -84,6 +112,11 @@ class QuestionService
     {
         if ($question->couple_id !== $user->couple_id) {
             throw new Exception('Unauthorized access to question');
+        }
+
+        // Check if user has set answer mode to call
+        if ($question->doesUserPreferCall($user)) {
+            throw new Exception('Kamu memilih untuk menjawab saat call. Ubah mode dulu jika ingin jawab sekarang.');
         }
 
         if (!$question->hasUserAnswered($user)) {
@@ -174,5 +207,36 @@ class QuestionService
         }
 
         return $question->hasUserAnswered($user);
+    }
+
+    /**
+     * Get question data for API response.
+     */
+    public function getQuestionDataForApi(DailyQuestion $question, User $user): array
+    {
+        $couple = $user->couple;
+        if (!$couple) {
+            throw new Exception('User not part of a couple');
+        }
+
+        return [
+            'id' => $question->id,
+            'question' => $question->question,
+            'category' => $question->category,
+            'question_date' => $question->question_date->toDateString(),
+            'formatted_date' => $question->formatted_date,
+            'is_today' => $question->isToday(),
+            'my_answer' => $question->getAnswerForUser($user),
+            'my_answered_at' => $question->getAnsweredAtForUser($user)?->toIso8601String(),
+            'my_answer_mode' => $question->getAnswerModeForUser($user),
+            'can_answer_via_app' => $question->canUserAnswerViaApp($user),
+            'prefers_call' => $question->doesUserPreferCall($user),
+            // Partner info (without revealing answer if not both answered)
+            'partner_answered' => $couple->isUserOne($user)
+                ? ($question->answer_two !== null)
+                : ($question->answer_one !== null),
+            'both_answered' => $question->bothAnswered(),
+            'both_prefer_call' => $question->bothPreferCall(),
+        ];
     }
 }
