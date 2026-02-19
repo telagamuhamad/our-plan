@@ -179,9 +179,9 @@ class SavingController extends Controller
 
             // Send mail
             $users = $this->userService->getAllUser();
-            foreach ($users as $user) {
-                Mail::to($user->email)->send(new SavingTransferMail($sourceSaving, $targetSaving, $amount, $user->name));
-            }
+            // foreach ($users as $user) {
+            //     Mail::to($user->email)->send(new SavingTransferMail($sourceSaving, $targetSaving, $amount, $user->name));
+            // }
 
             return redirect()->route('savings.index')->with('success', 'Transfer successful.');
         } catch (Exception $e) {

@@ -7,6 +7,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DailyMoodController;
 use App\Http\Controllers\GoalController;
 use App\Http\Controllers\MeetingController;
+use App\Http\Controllers\MeetingFeedbackController;
 use App\Http\Controllers\MissingYouController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
@@ -84,12 +85,20 @@ Route::middleware(['auth'])->group(function () {
         // Meetings
         Route::prefix('meetings')->group(function () {
             Route::get('index', [MeetingController::class, 'index'])->name('meetings.index');
+            Route::get('countdown', [MeetingController::class, 'countdown'])->name('meetings.countdown');
             Route::get('show/{meetingId}', [MeetingController::class, 'show'])->name('meetings.show');
             Route::get('create', [MeetingController::class, 'create'])->name('meetings.create');
             Route::post('store', [MeetingController::class, 'store'])->name('meetings.store');
             Route::get('edit/{meetingId}', [MeetingController::class, 'edit'])->name('meetings.edit');
             Route::put('update/{meetingId}', [MeetingController::class, 'update'])->name('meetings.update');
             Route::delete('destroy/{meetingId}', [MeetingController::class, 'destroy'])->name('meetings.destroy');
+
+            // Meeting Feedback
+            Route::get('{meetingId}/feedback', [MeetingFeedbackController::class, 'index'])->name('meetings.feedback.index');
+            Route::post('{meetingId}/feedback', [MeetingFeedbackController::class, 'store'])->name('meetings.feedback.store');
+            Route::put('feedback/{feedbackId}', [MeetingFeedbackController::class, 'update'])->name('meetings.feedback.update');
+            Route::delete('feedback/{feedbackId}', [MeetingFeedbackController::class, 'destroy'])->name('meetings.feedback.destroy');
+            Route::get('{meetingId}/feedback/can-give', [MeetingFeedbackController::class, 'canGiveFeedback'])->name('meetings.feedback.can-give');
         });
 
         // Travels

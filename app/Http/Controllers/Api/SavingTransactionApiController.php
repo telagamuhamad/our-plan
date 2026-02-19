@@ -54,9 +54,9 @@ class SavingTransactionApiController extends Controller
 
             // Send mail
             $users = $this->userService->getAllUser();
-            foreach ($users as $user) {
-                Mail::to($user->email)->send(new SavingTransactionMail($saving, $payload['type'], $payload['amount'], $payload['note'], $user->name));
-            }
+            // foreach ($users as $user) {
+            //     Mail::to($user->email)->send(new SavingTransactionMail($saving, $payload['type'], $payload['amount'], $payload['note'], $user->name));
+            // }
 
             return response()->json([
                 'success' => true,

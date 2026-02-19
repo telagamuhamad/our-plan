@@ -38,10 +38,25 @@ class MeetingController extends Controller
         ];
 
         $meetings = $this->service->getAllMeetings($searchTerms);
+        $countdown = $this->service->getCountdown();
 
         return view('meetings.index', [
             'meetings' => $meetings,
-            'user' => $user
+            'user' => $user,
+            'countdown' => $countdown
+        ]);
+    }
+
+    /**
+     * Get countdown data (JSON response for AJAX)
+     */
+    public function countdown()
+    {
+        $countdown = $this->service->getCountdown();
+
+        return response()->json([
+            'success' => true,
+            'data' => $countdown
         ]);
     }
 
@@ -85,9 +100,9 @@ class MeetingController extends Controller
 
             // Send mail
             $allUsers = $this->userService->getAllUser();
-            foreach ($allUsers as $user) {
-                Mail::to($user->email)->send(new MeetingConfirmationMail($meeting, $user->name));
-            }
+            // foreach ($allUsers as $user) {
+            //     Mail::to($user->email)->send(new MeetingConfirmationMail($meeting, $user->name));
+            // }
     
             return redirect()->route('meetings.index')->with('success', 'Meeting created successfully.');
         } catch (Exception $e) {
@@ -131,15 +146,15 @@ class MeetingController extends Controller
             DB::commit();
 
             $allUsers = $this->userService->getAllUser();
-            foreach ($allUsers as $user) {
-                Mail::to($user->email)->send(new MeetingUpdatedMail($meeting, $user->name));
-            }
+            // foreach ($allUsers as $user) {
+            //     Mail::to($user->email)->send(new MeetingUpdatedMail($meeting, $user->name));
+            // }
 
             return redirect()->route('meetings.index')->with('success', 'Meeting updated successfully.');
         } catch (Exception $e) {
             DB::rollBack();
             report($e);
-            return redirect()->route('meetings.index')->with('error', 'Failed to update meeting.');
+            return redirect()->route('meetings.index')->with('error', 'Failed to update meeting. ' . $e->getMessage());
         }
     }
 
@@ -155,9 +170,9 @@ class MeetingController extends Controller
             DB::commit();
 
             $allUsers = $this->userService->getAllUser();
-            foreach ($allUsers as $user) {
-                Mail::to($user->email)->send(new MeetingCancellationMail($meeting, $user->name));
-            }
+            // foreach ($allUsers as $user) {
+            //     Mail::to($user->email)->send(new MeetingCancellationMail($meeting, $user->name));
+            // }
             
             return redirect()->route('meetings.index')->with('success', 'Meeting deleted successfully.');
         } catch (\Throwable $e) {

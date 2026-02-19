@@ -50,9 +50,9 @@ class SavingTransactionController extends Controller
 
             // Send mail
             $users = $this->userService->getAllUser();
-            foreach ($users as $user) {
-                Mail::to($user->email)->send(new SavingTransactionMail($saving, $payload['type'], $payload['amount'], $payload['note'], $user->name));
-            }
+            // foreach ($users as $user) {
+            //     Mail::to($user->email)->send(new SavingTransactionMail($saving, $payload['type'], $payload['amount'], $payload['note'], $user->name));
+            // }
 
             return redirect()->route('savings.index')->with('success', 'Saving transaction created successfully.');
         } catch (Exception $e) {

@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\CoupleApiController;
 use App\Http\Controllers\Api\DailyMoodApiController;
 use App\Http\Controllers\Api\GoalController;
 use App\Http\Controllers\Api\MeetingApiController;
+use App\Http\Controllers\Api\MeetingFeedbackApiController;
 use App\Http\Controllers\Api\MissingYouController;
 use App\Http\Controllers\Api\QuestionController;
 use App\Http\Controllers\Api\SavingApiController;
@@ -61,10 +62,18 @@ Route::middleware('auth:sanctum')->group(function () {
         // Meetings
         Route::prefix('meetings')->group(function () {
             Route::get('index', [MeetingApiController::class, 'index'])->name('meetings.index');
+            Route::get('countdown', [MeetingApiController::class, 'countdown'])->name('meetings.countdown');
             Route::get('show/{meetingId}', [MeetingApiController::class, 'show'])->name('meetings.show');
             Route::post('store', [MeetingApiController::class, 'store'])->name('meetings.store');
             Route::put('update/{meetingId}', [MeetingApiController::class, 'update'])->name('meetings.update');
             Route::delete('destroy/{meetingId}', [MeetingApiController::class, 'destroy'])->name('meetings.destroy');
+
+            // Meeting Feedback
+            Route::get('{meetingId}/feedback', [MeetingFeedbackApiController::class, 'index'])->name('meetings.feedback.index');
+            Route::post('{meetingId}/feedback', [MeetingFeedbackApiController::class, 'store'])->name('meetings.feedback.store');
+            Route::put('feedback/{feedbackId}', [MeetingFeedbackApiController::class, 'update'])->name('meetings.feedback.update');
+            Route::delete('feedback/{feedbackId}', [MeetingFeedbackApiController::class, 'destroy'])->name('meetings.feedback.destroy');
+            Route::get('{meetingId}/feedback/can-give', [MeetingFeedbackApiController::class, 'canGiveFeedback'])->name('meetings.feedback.can-give');
         });
 
         // Travels

@@ -175,9 +175,9 @@ class TravelApiController extends Controller
 
             // send assignation mail
             $allUsers = $this->userService->getAllUser();
-            foreach ($allUsers as $user) {
-                Mail::to($user->email)->send(new TravelAssignedMail($updatedTravel, $meeting, $user->name));
-            }
+            // foreach ($allUsers as $user) {
+            //     Mail::to($user->email)->send(new TravelAssignedMail($updatedTravel, $meeting, $user->name));
+            // }
 
             return response()->json([
                 'success' => true,
@@ -208,9 +208,9 @@ class TravelApiController extends Controller
 
             // send cancellation mail
             $allUsers = $this->userService->getAllUser();
-            foreach ($allUsers as $user) {
-                Mail::to($user->email)->send(new TravelUnassignedMail($travel, $meeting, $user->name));
-            }
+            // foreach ($allUsers as $user) {
+            //     Mail::to($user->email)->send(new TravelUnassignedMail($travel, $meeting, $user->name));
+            // }
 
             return response()->json([
                 'success' => true,
@@ -241,9 +241,9 @@ class TravelApiController extends Controller
 
             // send completion mail
             $allUsers = $this->userService->getAllUser();
-            foreach ($allUsers as $user) {
-                Mail::to($user->email)->send(new TravelCompletedMail($travel, $meeting, $user->name));
-            }
+            // foreach ($allUsers as $user) {
+            //     Mail::to($user->email)->send(new TravelCompletedMail($travel, $meeting, $user->name));
+            // }
 
             return response()->json([
                 'success' => true,

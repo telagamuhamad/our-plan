@@ -62,4 +62,40 @@ class MeetingRepository {
 
         return $meeting->delete();
     }
+
+    /**
+     * Get the next upcoming meeting
+     */
+    public function getNextMeeting()
+    {
+        return $this->model->with('user', 'travels')
+            ->where('start_date', '>=', Carbon::now()->toDateString())
+            ->orderBy('start_date', 'asc')
+            ->first();
+    }
+
+    /**
+     * Get countdown data for the next meeting
+     */
+    public function getCountdown()
+    {
+        $meeting = $this->getNextMeeting();
+
+        if (!$meeting) {
+            return [
+                'meeting' => null,
+                'countdown' => null,
+                'has_upcoming' => false,
+                'message' => 'Belum ada meeting yang dijadwalkan',
+            ];
+        }
+
+        return [
+            'meeting' => $meeting,
+            'countdown' => $meeting->countdown,
+            'formatted_countdown' => $meeting->formatted_countdown,
+            'has_upcoming' => true,
+            'message' => $meeting->countdown['message'],
+        ];
+    }
 }

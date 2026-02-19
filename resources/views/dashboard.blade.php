@@ -16,6 +16,99 @@
         </div>
     @endif
 
+    <!-- Countdown Widget -->
+    @if($countdown && $countdown['has_upcoming'])
+    <div class="card shadow-sm mb-4 border-primary">
+        <div class="card-body text-center">
+            <h5 class="card-title text-primary mb-3">⏰ Countdown ke Meeting Berikutnya</h5>
+            <h4 class="fw-bold mb-2">{{ $countdown['meeting']->location ?? 'Tanpa Lokasi' }}</h4>
+            <p class="text-muted mb-3">{{ $countdown['meeting']->formatted_start_date }} – {{ $countdown['meeting']->formatted_end_date }}</p>
+
+            <div class="countdown-timer d-flex justify-content-center gap-3 mb-3" id="countdown-timer" data-seconds="{{ $countdown['countdown']['total_seconds'] }}">
+                <div class="countdown-item">
+                    <div class="countdown-value" id="countdown-days">{{ $countdown['countdown']['days'] }}</div>
+                    <div class="countdown-label">Hari</div>
+                </div>
+                <div class="countdown-separator">:</div>
+                <div class="countdown-item">
+                    <div class="countdown-value" id="countdown-hours">{{ $countdown['countdown']['hours'] }}</div>
+                    <div class="countdown-label">Jam</div>
+                </div>
+                <div class="countdown-separator">:</div>
+                <div class="countdown-item">
+                    <div class="countdown-value" id="countdown-minutes">{{ $countdown['countdown']['minutes'] }}</div>
+                    <div class="countdown-label">Menit</div>
+                </div>
+                <div class="countdown-separator">:</div>
+                <div class="countdown-item">
+                    <div class="countdown-value" id="countdown-seconds">{{ $countdown['countdown']['seconds'] }}</div>
+                    <div class="countdown-label">Detik</div>
+                </div>
+            </div>
+
+            <p class="text-muted small mb-0">{{ $countdown['message'] }}</p>
+            <a href="{{ route('meetings.index') }}" class="btn btn-outline-primary btn-sm mt-2">Lihat Semua Meeting</a>
+        </div>
+    </div>
+
+    <style>
+        .countdown-timer {
+            font-size: 1.5rem;
+        }
+        .countdown-item {
+            text-align: center;
+            min-width: 60px;
+        }
+        .countdown-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #0d6efd;
+        }
+        .countdown-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: #6c757d;
+        }
+        .countdown-separator {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #0d6efd;
+            padding-top: 0.5rem;
+        }
+    </style>
+
+    <script>
+        // Real-time countdown update
+        document.addEventListener('DOMContentLoaded', function() {
+            const timerElement = document.getElementById('countdown-timer');
+            if (!timerElement) return;
+
+            let totalSeconds = parseInt(timerElement.dataset.seconds);
+
+            function updateCountdown() {
+                if (totalSeconds <= 0) {
+                    setTimeout(() => location.reload(), 1000);
+                    return;
+                }
+
+                totalSeconds--;
+
+                const days = Math.floor(totalSeconds / (24 * 60 * 60));
+                const hours = Math.floor((totalSeconds % (24 * 60 * 60)) / (60 * 60));
+                const minutes = Math.floor((totalSeconds % (60 * 60)) / 60);
+                const seconds = totalSeconds % 60;
+
+                document.getElementById('countdown-days').textContent = String(days).padStart(2, '0');
+                document.getElementById('countdown-hours').textContent = String(hours).padStart(2, '0');
+                document.getElementById('countdown-minutes').textContent = String(minutes).padStart(2, '0');
+                document.getElementById('countdown-seconds').textContent = String(seconds).padStart(2, '0');
+            }
+
+            setInterval(updateCountdown, 1000);
+        });
+    </script>
+    @endif
+
     <!-- Header with Partner Info -->
     @if($partner)
         <div class="text-center mb-4">
