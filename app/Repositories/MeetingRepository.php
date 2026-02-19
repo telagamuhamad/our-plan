@@ -98,4 +98,90 @@ class MeetingRepository {
             'message' => $meeting->countdown['message'],
         ];
     }
+
+    /**
+     * Get meeting analytics for a couple
+     */
+    public function getAnalytics($coupleId = null)
+    {
+        $now = Carbon::now();
+        $startOfMonth = $now->startOfMonth()->toDateString();
+        $startOfYear = $now->startOfYear()->toDateString();
+
+        // Get all meetings
+        $allMeetings = $this->model->with('feedbacks')->get();
+
+        // Total meetings
+        $totalMeetings = $allMeetings->count();
+
+        // Completed meetings (end date has passed)
+        $completedMeetings = $allMeetings->filter(function ($meeting) use ($now) {
+            return Carbon::parse($meeting->end_date)->endOfDay()->lt($now);
+        });
+
+        // Upcoming meetings
+        $upcomingMeetings = $allMeetings->filter(function ($meeting) use ($now) {
+            return Carbon::parse($meeting->start_date)->startOfDay()->gte($now);
+        });
+
+        // In progress meetings
+        $inProgressMeetings = $allMeetings->filter(function ($meeting) use ($now) {
+            $start = Carbon::parse($meeting->start_date)->startOfDay();
+            $end = Carbon::parse($meeting->end_date)->endOfDay();
+            return $now->gte($start) && $now->lte($end);
+        });
+
+        // Average rating
+        $feedbacks = $allMeetings->flatMap->feedbacks;
+        $avgRating = $feedbacks->isNotEmpty() ? round($feedbacks->avg('rating'), 1) : 0;
+        $totalFeedbacks = $feedbacks->count();
+
+        // Most frequent location
+        $locationCounts = $allMeetings->where('location', '!=', null)->countBy('location');
+        $mostFrequentLocation = $locationCounts->sortDesc()->keys()->first();
+
+        // Total days spent together (sum of all meeting durations)
+        $totalDaysSpent = $completedMeetings->sum(function ($meeting) {
+            $start = Carbon::parse($meeting->start_date);
+            $end = Carbon::parse($meeting->end_date);
+            return $start->diffInDays($end) + 1; // +1 to count both start and end day
+        });
+
+        // This month meetings
+        $thisMonthMeetings = $allMeetings->filter(function ($meeting) use ($startOfMonth) {
+            return Carbon::parse($meeting->start_date)->gte($startOfMonth);
+        });
+
+        // This year meetings
+        $thisYearMeetings = $allMeetings->filter(function ($meeting) use ($startOfYear) {
+            return Carbon::parse($meeting->start_date)->gte($startOfYear);
+        });
+
+        // Meetings by location (for chart/list)
+        $meetingsByLocation = $allMeetings->where('location', '!=', null)
+            ->groupBy('location')
+            ->map(function ($meetings) {
+                return [
+                    'count' => $meetings->count(),
+                    'last_visit' => $meetings->max('end_date'),
+                ];
+            })
+            ->sortByDesc('count');
+
+        return [
+            'total_meetings' => $totalMeetings,
+            'completed_meetings' => $completedMeetings->count(),
+            'upcoming_meetings' => $upcomingMeetings->count(),
+            'in_progress_meetings' => $inProgressMeetings->count(),
+            'average_rating' => $avgRating,
+            'total_feedbacks' => $totalFeedbacks,
+            'most_frequent_location' => $mostFrequentLocation ?: '-',
+            'total_days_spent' => $totalDaysSpent,
+            'this_month_meetings' => $thisMonthMeetings->count(),
+            'this_year_meetings' => $thisYearMeetings->count(),
+            'meetings_by_location' => $meetingsByLocation,
+            'recent_meetings' => $allMeetings->sortByDesc('start_date')->take(5)->values(),
+            'next_meeting' => $this->getNextMeeting(),
+        ];
+    }
 }

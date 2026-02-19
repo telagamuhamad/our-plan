@@ -6,6 +6,7 @@ use App\Http\Controllers\CoupleController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DailyMoodController;
 use App\Http\Controllers\GoalController;
+use App\Http\Controllers\MeetingAnalyticsController;
 use App\Http\Controllers\MeetingController;
 use App\Http\Controllers\MeetingFeedbackController;
 use App\Http\Controllers\MissingYouController;
@@ -86,6 +87,8 @@ Route::middleware(['auth'])->group(function () {
         Route::prefix('meetings')->group(function () {
             Route::get('index', [MeetingController::class, 'index'])->name('meetings.index');
             Route::get('countdown', [MeetingController::class, 'countdown'])->name('meetings.countdown');
+            Route::get('analytics', [MeetingAnalyticsController::class, 'index'])->name('meetings.analytics');
+            Route::get('analytics-data', [MeetingAnalyticsController::class, 'data'])->name('meetings.analytics.data');
             Route::get('show/{meetingId}', [MeetingController::class, 'show'])->name('meetings.show');
             Route::get('create', [MeetingController::class, 'create'])->name('meetings.create');
             Route::post('store', [MeetingController::class, 'store'])->name('meetings.store');

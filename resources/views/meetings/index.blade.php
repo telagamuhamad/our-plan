@@ -6,7 +6,10 @@
 <div class="container">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h2 class="fw-semibold">📅 Meeting Planner</h2>
-        <a href="{{ route('meetings.create') }}" class="btn btn-primary">➕ Tambah Pertemuan</a>
+        <div class="d-flex gap-2">
+            <a href="{{ route('meetings.analytics') }}" class="btn btn-info">📊 Analytics</a>
+            <a href="{{ route('meetings.create') }}" class="btn btn-primary">➕ Tambah Pertemuan</a>
+        </div>
     </div>
 
     @if(session('success'))

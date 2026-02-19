@@ -64,4 +64,12 @@ class MeetingService {
     {
         return $this->repository->getCountdown();
     }
+
+    /**
+     * Get meeting analytics
+     */
+    public function getAnalytics()
+    {
+        return $this->repository->getAnalytics();
+    }
 }
