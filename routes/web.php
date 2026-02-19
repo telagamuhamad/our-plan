@@ -17,7 +17,10 @@ use App\Http\Controllers\SavingController;
 use App\Http\Controllers\SavingTransactionController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\TimelineController;
+use App\Http\Controllers\TravelAnalyticsController;
 use App\Http\Controllers\TravelController;
+use App\Http\Controllers\TravelJournalController;
+use App\Http\Controllers\TravelPhotoController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -107,6 +110,8 @@ Route::middleware(['auth'])->group(function () {
         // Travels
         Route::prefix('travels')->group(function () {
             Route::get('index', [TravelController::class, 'index'])->name('travels.index');
+            Route::get('analytics', [TravelAnalyticsController::class, 'index'])->name('travels.analytics');
+            Route::get('analytics-data', [TravelAnalyticsController::class, 'data'])->name('travels.analytics.data');
             Route::get('show/{travelId}', [TravelController::class, 'show'])->name('travels.show');
             Route::get('create', [TravelController::class, 'create'])->name('travels.create');
             Route::post('store', [TravelController::class, 'store'])->name('travels.store');
@@ -116,6 +121,29 @@ Route::middleware(['auth'])->group(function () {
             Route::post('assign-to-meeting/{meetingId}', [TravelController::class, 'assignToMeeting'])->name('travels.assign-to-meeting');
             Route::patch('complete-travel/{travelId}', [TravelController::class, 'completeTravel'])->name('travels.complete-travel');
             Route::patch('remove-from-meeting/{travelId}', [TravelController::class, 'removeFromMeeting'])->name('travels.remove-from-meeting');
+
+            // Travel Photos
+            Route::get('{travelId}/photos', [TravelPhotoController::class, 'index'])->name('travels.photos.index');
+            Route::post('{travelId}/photos', [TravelPhotoController::class, 'store'])->name('travels.photos.store');
+            Route::post('{travelId}/photos/multiple', [TravelPhotoController::class, 'storeMultiple'])->name('travels.photos.store-multiple');
+            Route::put('photos/{photoId}', [TravelPhotoController::class, 'update'])->name('travels.photos.update');
+            Route::delete('photos/{photoId}', [TravelPhotoController::class, 'destroy'])->name('travels.photos.destroy');
+            Route::post('photos/order', [TravelPhotoController::class, 'updateOrder'])->name('travels.photos.order');
+
+            // Travel Journals
+            Route::get('{travelId}/journals', [TravelJournalController::class, 'byTravel'])->name('travels.journals.index');
+        });
+
+        // Travel Journals (separate section)
+        Route::prefix('journals')->group(function () {
+            Route::get('/', [TravelJournalController::class, 'index'])->name('journals.index');
+            Route::get('create', [TravelJournalController::class, 'create'])->name('journals.create');
+            Route::post('store', [TravelJournalController::class, 'store'])->name('journals.store');
+            Route::get('show/{journalId}', [TravelJournalController::class, 'show'])->name('journals.show');
+            Route::get('edit/{journalId}', [TravelJournalController::class, 'edit'])->name('journals.edit');
+            Route::put('update/{journalId}', [TravelJournalController::class, 'update'])->name('journals.update');
+            Route::delete('destroy/{journalId}', [TravelJournalController::class, 'destroy'])->name('journals.destroy');
+            Route::post('favorite/{journalId}', [TravelJournalController::class, 'toggleFavorite'])->name('journals.favorite');
         });
 
         // Savings

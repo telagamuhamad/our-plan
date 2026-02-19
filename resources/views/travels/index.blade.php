@@ -6,7 +6,10 @@
 <div class="container">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h2 class="fw-semibold">🌍 Travel Planner</h2>
-        <a href="{{ route('travels.create') }}" class="btn btn-primary">➕ Tambah Rencana Perjalanan</a>
+        <div class="d-flex gap-2">
+            <a href="{{ route('travels.analytics') }}" class="btn btn-info">📊 Analytics</a>
+            <a href="{{ route('travels.create') }}" class="btn btn-primary">➕ Tambah Rencana Perjalanan</a>
+        </div>
     </div>
 
     @if(session('success'))
@@ -25,6 +28,7 @@
                     <th>Tanggal Kunjungan</th>
                     <th>Meeting Terkait</th>
                     <th>Status</th>
+                    <th>Foto</th>
                     <th>Aksi</th>
                 </tr>
             </thead>
@@ -50,6 +54,9 @@
                             </span>
                         </td>
                         <td class="text-center">
+                            <span class="badge bg-info">📷 {{ $travel->photos->count() }}</span>
+                        </td>
+                        <td class="text-center">
                             <a href="{{ route('travels.show', $travel->id) }}" class="btn btn-info btn-sm">👁️ Detail</a>
                             <a href="{{ route('travels.edit', $travel->id) }}" class="btn btn-warning btn-sm">✏️ Edit</a>
                             <form action="{{ route('travels.destroy', $travel->id) }}" method="POST" class="d-inline">
@@ -60,7 +67,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6" class="text-center text-muted py-3">Belum ada rencana perjalanan yang dibuat.</td>
+                        <td colspan="7" class="text-center text-muted py-3">Belum ada rencana perjalanan yang dibuat.</td>
                     </tr>
                 @endforelse
             </tbody>

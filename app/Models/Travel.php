@@ -29,6 +29,27 @@ class Travel extends Model
         return $this->belongsTo(Meeting::class);
     }
 
+    public function photos()
+    {
+        return $this->hasMany(TravelPhoto::class)->ordered();
+    }
+
+    /**
+     * Get the primary photo for this travel
+     */
+    public function primaryPhoto()
+    {
+        return $this->hasOne(TravelPhoto::class)->oldestOfMany();
+    }
+
+    /**
+     * Get all journals for this travel
+     */
+    public function journals()
+    {
+        return $this->hasMany(TravelJournal::class)->orderByDate();
+    }
+
     public function getFormattedVisitDateAttribute()
     {
         return $this->visit_date 
