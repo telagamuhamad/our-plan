@@ -14,5 +14,6 @@ class DatabaseSeeder extends Seeder
     {
         // Import user seeder
         $this->call(UserSeeder::class);
+        $this->call(SavingCategorySeeder::class);
     }
 }

@@ -7,6 +7,8 @@
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h2 class="mb-0">💰 <strong>Savings Tracker</strong></h2>
         <div>
+            <a href="{{ route('savings-analytics.index') }}" class="btn btn-info me-2">📊 Analytics</a>
+            <a href="{{ route('savings-comparison.index') }}" class="btn btn-success me-2">💑 Compare</a>
             <a href="{{ route('savings.create') }}" class="btn btn-primary me-2">➕ Tambah Tabungan</a>
             <a href="{{ route('savings.transfer.form') }}" class="btn btn-warning">🔄 Transfer Saldo</a>
         </div>

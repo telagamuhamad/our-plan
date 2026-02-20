@@ -11,6 +11,9 @@ use App\Http\Controllers\Api\QuestionController;
 use App\Http\Controllers\Api\SavingApiController;
 use App\Http\Controllers\Api\SavingTransactionApiController;
 use App\Http\Controllers\SavingCategoryController;
+use App\Http\Controllers\RecurringSavingController;
+use App\Http\Controllers\SavingsAnalyticsController;
+use App\Http\Controllers\SavingsComparisonController;
 use App\Http\Controllers\Api\TaskController;
 use App\Http\Controllers\Api\TimelineApiController;
 use App\Http\Controllers\Api\TravelApiController;
@@ -113,6 +116,41 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::post('/', [SavingCategoryController::class, 'store'])->name('saving-categories.store');
             Route::put('/{id}', [SavingCategoryController::class, 'update'])->name('saving-categories.update');
             Route::delete('/{id}', [SavingCategoryController::class, 'destroy'])->name('saving-categories.destroy');
+        });
+
+        // Recurring Savings
+        Route::prefix('recurring-savings')->group(function () {
+            Route::get('/', [RecurringSavingController::class, 'index'])->name('recurring-savings.index');
+            Route::get('/stats', [RecurringSavingController::class, 'stats'])->name('recurring-savings.stats');
+            Route::post('/', [RecurringSavingController::class, 'store'])->name('recurring-savings.store');
+            Route::get('/{id}', [RecurringSavingController::class, 'show'])->name('recurring-savings.show');
+            Route::put('/{id}', [RecurringSavingController::class, 'update'])->name('recurring-savings.update');
+            Route::delete('/{id}', [RecurringSavingController::class, 'destroy'])->name('recurring-savings.destroy');
+            Route::post('/{id}/pause', [RecurringSavingController::class, 'pause'])->name('recurring-savings.pause');
+            Route::post('/{id}/resume', [RecurringSavingController::class, 'resume'])->name('recurring-savings.resume');
+            Route::post('/{id}/skip', [RecurringSavingController::class, 'skip'])->name('recurring-savings.skip');
+        });
+
+        // Savings Analytics
+        Route::prefix('savings-analytics')->group(function () {
+            Route::get('/overview', [SavingsAnalyticsController::class, 'overview'])->name('savings-analytics.overview');
+            Route::get('/trends', [SavingsAnalyticsController::class, 'trends'])->name('savings-analytics.trends');
+            Route::get('/goals', [SavingsAnalyticsController::class, 'goals'])->name('savings-analytics.goals');
+            Route::get('/growth', [SavingsAnalyticsController::class, 'growth'])->name('savings-analytics.growth');
+            Route::get('/categories', [SavingsAnalyticsController::class, 'categories'])->name('savings-analytics.categories');
+            Route::get('/upcoming', [SavingsAnalyticsController::class, 'upcoming'])->name('savings-analytics.upcoming');
+            Route::get('/compare', [SavingsAnalyticsController::class, 'compare'])->name('savings-analytics.compare');
+            Route::get('/export', [SavingsAnalyticsController::class, 'export'])->name('savings-analytics.export');
+        });
+
+        // Savings Comparison with Partner
+        Route::prefix('savings-comparison')->group(function () {
+            Route::get('/overview', [SavingsComparisonController::class, 'overview'])->name('savings-comparison.overview');
+            Route::get('/savings-list', [SavingsComparisonController::class, 'savingsList'])->name('savings-comparison.savings-list');
+            Route::get('/monthly-contributions', [SavingsComparisonController::class, 'monthlyContributions'])->name('savings-comparison.monthly-contributions');
+            Route::get('/categories', [SavingsComparisonController::class, 'categories'])->name('savings-comparison.categories');
+            Route::get('/goals', [SavingsComparisonController::class, 'goals'])->name('savings-comparison.goals');
+            Route::get('/achievements', [SavingsComparisonController::class, 'achievements'])->name('savings-comparison.achievements');
         });
 
         // Timeline

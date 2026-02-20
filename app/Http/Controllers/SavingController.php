@@ -8,6 +8,7 @@ use App\Models\Saving;
 use App\Services\SavingService;
 use App\Services\SavingCategoryService;
 use App\Services\SavingTransactionService;
+use App\Services\RecurringSavingService;
 use App\Services\UserService;
 use Exception;
 use Illuminate\Http\Request;
@@ -21,17 +22,20 @@ class SavingController extends Controller
     protected $userService;
     protected $savingTransactionService;
     protected $categoryService;
+    protected $recurringSavingService;
 
     public function __construct(
         SavingService $service,
         UserService $userService,
         SavingTransactionService $savingTransactionService,
-        SavingCategoryService $categoryService
+        SavingCategoryService $categoryService,
+        RecurringSavingService $recurringSavingService
     ) {
         $this->service = $service;
         $this->userService = $userService;
         $this->savingTransactionService = $savingTransactionService;
         $this->categoryService = $categoryService;
+        $this->recurringSavingService = $recurringSavingService;
     }
 
     public function index()
@@ -78,9 +82,11 @@ class SavingController extends Controller
         }
 
         $savingTransactions = $this->savingTransactionService->getTransactionsBySavingId($saving->id);
+        $recurringSavings = $this->recurringSavingService->getBySavingId($id);
         return view('savings.show', [
             'saving' => $saving,
-            'savingTransactions' => $savingTransactions
+            'savingTransactions' => $savingTransactions,
+            'recurringSavings' => $recurringSavings
         ]);
     }
 

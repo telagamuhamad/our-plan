@@ -175,6 +175,86 @@
         </div>
     </div>
 
+    {{-- Recurring Savings Section --}}
+    <div class="card mb-4 shadow-sm">
+        <div class="card-header d-flex justify-content-between align-items-center" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+            <strong>🔄 Auto-Save (Recurring Deposit)</strong>
+            <button type="button" class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#createRecurringModal">
+                ➕ Buat Auto-Save
+            </button>
+        </div>
+        <div class="card-body">
+            @if($recurringSavings->isEmpty())
+                <div class="text-center text-muted py-3">
+                    <p>Belum ada auto-save untuk tabungan ini.</p>
+                    <small class="text-muted">Auto-save akan otomatis menyetor sesuai jadwal yang Anda tentukan.</small>
+                </div>
+            @else
+                <div class="row">
+                    @foreach($recurringSavings as $recurring)
+                        <div class="col-md-6 mb-3">
+                            <div class="card {{ $recurring->is_due ? 'border-warning' : '' }}">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <h6 class="mb-0">
+                                                {{ $recurring->name ?? 'Auto-Save' }}
+                                                <span class="badge bg-info">{{ $recurring->formatted_frequency }}</span>
+                                            </h6>
+                                            <small class="text-muted">{{ $recurring->savingModel->name }}</small>
+                                        </div>
+                                        @if($recurring->is_due)
+                                            <span class="badge bg-warning">⏰ Due Today</span>
+                                        @elseif($recurring->is_paused)
+                                            <span class="badge bg-secondary">⏸️ Paused</span>
+                                        @elseif(!$recurring->is_active)
+                                            <span class="badge bg-danger">Stopped</span>
+                                        @else
+                                            <span class="badge bg-success">Active</span>
+                                        @endif
+                                    </div>
+                                    <div class="mb-2">
+                                        <strong class="text-primary">{{ $recurring->formatted_amount }}</strong>
+                                        <small class="text-muted">/ {{ $recurring->frequency }}</small>
+                                    </div>
+                                    <div class="d-flex justify-content-between text-muted small mb-2">
+                                        <span>📅 Next: {{ $recurring->next_run_date->format('d M Y') }}</span>
+                                        @if($recurring->progress_percentage)
+                                            <span>{{ $recurring->progress_percentage }}% complete</span>
+                                        @endif
+                                    </div>
+                                    <div class="d-flex gap-1 flex-wrap">
+                                        @if($recurring->is_paused)
+                                            <form action="{{ route('recurring-savings.resume', $recurring->id) }}" method="POST" class="d-inline">
+                                                @csrf
+                                                <button type="submit" class="btn btn-sm btn-success">▶️ Resume</button>
+                                            </form>
+                                        @elseif($recurring->is_active)
+                                            <form action="{{ route('recurring-savings.pause', $recurring->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Pause auto-save ini?')">
+                                                @csrf
+                                                <button type="submit" class="btn btn-sm btn-warning">⏸️ Pause</button>
+                                            </form>
+                                            <form action="{{ route('recurring-savings.skip', $recurring->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Lewati jadwal berikutnya?')">
+                                                @csrf
+                                                <button type="submit" class="btn btn-sm btn-info">⏭️ Skip Next</button>
+                                            </form>
+                                        @endif
+                                        <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editRecurringModal{{ $recurring->id }}">✏️ Edit</button>
+                                        <form action="{{ route('recurring-savings.destroy', $recurring->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Hapus auto-save ini?')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">🗑️</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            @endif
+        </div>
+    </div>
+
     {{-- Transaction History --}}
     <h4 class="mb-3">📜 Riwayat Transaksi</h4>
     @if ($savingTransactions->isEmpty())
@@ -205,4 +285,106 @@
 
     <a href="{{ route('savings.index') }}" class="btn btn-secondary mt-4">⬅️ Kembali ke Savings Tracker</a>
 </div>
+
+{{-- Create Recurring Saving Modal --}}
+<div class="modal fade" id="createRecurringModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form action="{{ route('recurring-savings.store') }}" method="POST">
+                @csrf
+                <div class="modal-header">
+                    <h5 class="modal-title">➕ Buat Auto-Save Baru</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Tabungan:</label>
+                        <input type="text" class="form-control" value="{{ $saving->name }}" readonly>
+                        <input type="hidden" name="saving_id" value="{{ $saving->id }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Nama (Opsional):</label>
+                        <input type="text" name="name" id="name" class="form-control" placeholder="Misal: Setoran Gaji Bulanan">
+                    </div>
+                    <div class="mb-3">
+                        <label for="frequency" class="form-label">Frekuensi:</label>
+                        <select name="frequency" id="frequency" class="form-select" required>
+                            <option value="daily">📅 Harian</option>
+                            <option value="weekly">📆 Mingguan</option>
+                            <option value="biweekly">🗓️ Dua Mingguan</option>
+                            <option value="monthly" selected>📅 Bulanan</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="amount" class="form-label">Jumlah Setoran:</label>
+                        <input type="number" name="amount" id="amount" class="form-control" placeholder="Masukkan jumlah" required min="1000">
+                    </div>
+                    <div class="mb-3">
+                        <label for="start_date" class="form-label">Tanggal Mulai:</label>
+                        <input type="date" name="start_date" id="start_date" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="end_date" class="form-label">Tanggal Selesai (Opsional):</label>
+                        <input type="date" name="end_date" id="end_date" class="form-control">
+                        <small class="text-muted">Kosongkan untuk berjalan terus menerus</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary">💾 Buat Auto-Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{{-- Edit Recurring Saving Modals --}}
+@foreach($recurringSavings as $recurring)
+<div class="modal fade" id="editRecurringModal{{ $recurring->id }}" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form action="{{ route('recurring-savings.update', $recurring->id) }}" method="POST">
+                @csrf
+                @method('PUT')
+                <div class="modal-header">
+                    <h5 class="modal-title">✏️ Edit Auto-Save</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Tabungan:</label>
+                        <input type="text" class="form-control" value="{{ $recurring->savingModel->name }}" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_name_{{ $recurring->id }}" class="form-label">Nama:</label>
+                        <input type="text" name="name" id="edit_name_{{ $recurring->id }}" class="form-control" value="{{ $recurring->name }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_frequency_{{ $recurring->id }}" class="form-label">Frekuensi:</label>
+                        <select name="frequency" id="edit_frequency_{{ $recurring->id }}" class="form-select" required>
+                            <option value="daily" {{ $recurring->frequency === 'daily' ? 'selected' : '' }}>📅 Harian</option>
+                            <option value="weekly" {{ $recurring->frequency === 'weekly' ? 'selected' : '' }}>📆 Mingguan</option>
+                            <option value="biweekly" {{ $recurring->frequency === 'biweekly' ? 'selected' : '' }}>🗓️ Dua Mingguan</option>
+                            <option value="monthly" {{ $recurring->frequency === 'monthly' ? 'selected' : '' }}>📅 Bulanan</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_amount_{{ $recurring->id }}" class="form-label">Jumlah Setoran:</label>
+                        <input type="number" name="amount" id="edit_amount_{{ $recurring->id }}" class="form-control" value="{{ $recurring->amount }}" required min="1000">
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_end_date_{{ $recurring->id }}" class="form-label">Tanggal Selesai:</label>
+                        <input type="date" name="end_date" id="edit_end_date_{{ $recurring->id }}" class="form-control" value="{{ $recurring->end_date?->format('Y-m-d') }}">
+                        <small class="text-muted">Kosongkan untuk berjalan terus menerus</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary">💾 Simpan Perubahan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@endforeach
 @endsection
