@@ -22,9 +22,24 @@ class SavingRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'category_id' => ['nullable', 'exists:saving_categories,id'],
             'name' => ['required', 'string'],
             'target_amount' => ['required_if:is_shared,0', 'numeric', 'nullable'],
             'is_shared' => ['boolean'],
+            'target_date' => ['nullable', 'date', 'after:today'],
+        ];
+    }
+
+    /**
+     * Get custom messages for validator errors.
+     *
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return [
+            'target_date.after' => 'Target date harus lebih dari hari ini.',
+            'target_amount.required_if' => 'Target amount wajib diisi untuk tabungan dengan tujuan.',
         ];
     }
 }

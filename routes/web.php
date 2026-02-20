@@ -14,6 +14,7 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\QuestionController;
 use App\Http\Controllers\SavingController;
+use App\Http\Controllers\SavingCategoryController;
 use App\Http\Controllers\SavingTransactionController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\TimelineController;
@@ -146,6 +147,14 @@ Route::middleware(['auth'])->group(function () {
             Route::post('favorite/{journalId}', [TravelJournalController::class, 'toggleFavorite'])->name('journals.favorite');
         });
 
+        // Saving Categories
+        Route::prefix('saving-categories')->group(function () {
+            Route::get('/', [SavingCategoryController::class, 'index'])->name('saving-categories.index');
+            Route::post('/', [SavingCategoryController::class, 'store'])->name('saving-categories.store');
+            Route::put('/{id}', [SavingCategoryController::class, 'update'])->name('saving-categories.update');
+            Route::delete('/{id}', [SavingCategoryController::class, 'destroy'])->name('saving-categories.destroy');
+        });
+
         // Savings
         Route::prefix('savings')->group(function () {
             Route::get('index', [SavingController::class, 'index'])->name('savings.index');
@@ -156,6 +165,7 @@ Route::middleware(['auth'])->group(function () {
             Route::put('update/{savingId}', [SavingController::class, 'update'])->name('savings.update');
             Route::delete('destroy/{savingId}', [SavingController::class, 'destroy'])->name('savings.destroy');
             Route::post('{savingId}/transactions', [SavingTransactionController::class, 'store'])->name('savings.transactions.store');
+            Route::post('{savingId}/mark-completed', [SavingController::class, 'markCompleted'])->name('savings.mark-completed');
             Route::get('/transfer', [SavingController::class, 'showTransferForm'])->name('savings.transfer.form');
             Route::post('/transfer', [SavingController::class, 'transfer'])->name('savings.transfer');
         });

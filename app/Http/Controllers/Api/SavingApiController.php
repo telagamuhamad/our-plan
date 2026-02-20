@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Services\Api\UserService;
 use App\Services\Api\SavingService;
 use App\Mail\SavingTransferMail;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\SavingRequest;
@@ -30,11 +31,6 @@ class SavingApiController extends Controller
     {
         $selectedCategory = request('category');
         $savings = $this->service->getAllSavings();
-
-        // Hitung total simpanan per kategori
-        $categoryData = $savings->groupBy('name')->map(function ($group) {
-            return $group->sum('current_amount');
-        });
 
         // Filter berdasarkan kategori jika ada
         if ($selectedCategory) {
@@ -65,7 +61,7 @@ class SavingApiController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Saving not found.'
-            ], 400);
+            ], 404);
         }
 
         $transactions = $this->savingTransactionService->getTransactionsBySavingId($saving->id);
@@ -85,17 +81,19 @@ class SavingApiController extends Controller
             $payload = [
                 'name' => $request->name,
                 'target_amount' => $request->target_amount,
+                'target_date' => $request->target_date,
                 'is_shared' => $request->has('is_shared'),
             ];
 
-            $this->service->createSaving($payload);
+            $saving = $this->service->createSaving($payload);
 
             DB::commit();
 
             return response()->json([
                 'success' => true,
-                'message' => 'Saving created successfully.'
-            ], 200);
+                'message' => 'Saving created successfully.',
+                'saving' => $saving
+            ], 201);
         } catch (Exception $e) {
             DB::rollBack();
             report($e);
@@ -116,6 +114,7 @@ class SavingApiController extends Controller
             $payload = [
                 'name' => $request->name,
                 'target_amount' => $request->target_amount,
+                'target_date' => $request->target_date,
                 'is_shared' => $request->has('is_shared'),
             ];
 
@@ -123,9 +122,12 @@ class SavingApiController extends Controller
 
             DB::commit();
 
+            $saving = $this->service->findSaving($id);
+
             return response()->json([
                 'success' => true,
-                'message' => 'Saving updated successfully.'
+                'message' => 'Saving updated successfully.',
+                'saving' => $saving
             ], 200);
         } catch (Exception $e) {
             DB::rollBack();
@@ -146,7 +148,7 @@ class SavingApiController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Saving not found.'
-            ], 400);
+            ], 404);
         }
 
         try {
@@ -167,7 +169,7 @@ class SavingApiController extends Controller
                 'success' => false,
                 'message' => 'Failed to delete saving.',
                 'error' => $e->getMessage()
-            ]);
+            ], 400);
         }
     }
 
@@ -197,12 +199,6 @@ class SavingApiController extends Controller
 
             DB::commit();
 
-            // Send mail
-            $users = $this->userService->getAllUser();
-            // foreach ($users as $user) {
-            //     Mail::to($user->email)->send(new SavingTransferMail($sourceSaving, $targetSaving, $amount, $user->name));
-            // }
-
             return response()->json([
                 'success' => true,
                 'message' => 'Transfer successful.'
@@ -217,5 +213,60 @@ class SavingApiController extends Controller
                 'error' => $e->getMessage()
             ], 400);
         }
+    }
+
+    /**
+     * Get savings with upcoming deadlines
+     */
+    public function upcomingDeadlines(Request $request)
+    {
+        $days = $request->get('days', 7);
+
+        $savings = $this->service->getUpcomingDeadlines((int) $days);
+
+        return response()->json([
+            'success' => true,
+            'savings' => $savings,
+            'count' => $savings->count()
+        ], 200);
+    }
+
+    /**
+     * Get overdue savings
+     */
+    public function overdue()
+    {
+        $savings = $this->service->getOverdueSavings();
+
+        return response()->json([
+            'success' => true,
+            'savings' => $savings,
+            'count' => $savings->count()
+        ], 200);
+    }
+
+    /**
+     * Mark saving as completed
+     */
+    public function markCompleted($id)
+    {
+        $saving = $this->service->findSaving($id);
+        if (empty($saving)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Saving not found.'
+            ], 404);
+        }
+
+        $user = Auth::user();
+        $this->service->markAsCompleted($saving, $user);
+
+        $saving->refresh();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Saving marked as completed.',
+            'saving' => $saving
+        ], 200);
     }
 }

@@ -20,14 +20,48 @@
         <div class="alert alert-danger">{{ session('error') }}</div>
     @endif
 
+    {{-- Upcoming Deadlines Alert --}}
+    @if($upcomingDeadlines->isNotEmpty())
+        <div class="alert alert-info alert-dismissible fade show" role="alert">
+            <strong>⏰ Deadline Mendatang:</strong>
+            <ul class="mb-0 mt-2">
+                @foreach($upcomingDeadlines as $upcoming)
+                    <li>
+                        <strong>{{ $upcoming->category->icon ?? '' }} {{ $upcoming->name }}</strong> -
+                        {{ $upcoming->days_remaining }} hari lagi
+                        ({{ $upcoming->formatted_target_date }})
+                    </li>
+                @endforeach
+            </ul>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
+
+    {{-- Overdue Savings Alert --}}
+    @if($overdueSavings->isNotEmpty())
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            <strong>⚠️ Tabungan Terlewat:</strong>
+            <ul class="mb-0 mt-2">
+                @foreach($overdueSavings as $overdue)
+                    <li>
+                        <strong>{{ $overdue->category->icon ?? '' }} {{ $overdue->name }}</strong> -
+                        Target Rp {{ number_format($overdue->target_amount, 0, ',', '.') }}
+                        (Terlewat pada {{ $overdue->formatted_target_date }})
+                    </li>
+                @endforeach
+            </ul>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
+
     <!-- Filter Kategori -->
     <form method="GET" action="{{ route('savings.index') }}" class="mb-3">
         <label for="category" class="form-label">🔍 Filter Kategori:</label>
         <select name="category" id="category" class="form-select" onchange="this.form.submit()">
             <option value="">Semua Kategori</option>
             @foreach ($categories as $category)
-                <option value="{{ $category }}" {{ $selectedCategory == $category ? 'selected' : '' }}>
-                    {{ $category }}
+                <option value="{{ $category->id }}" {{ $selectedCategory == $category->id ? 'selected' : '' }}>
+                    {{ $category->icon }} {{ $category->name }}
                 </option>
             @endforeach
         </select>
@@ -38,18 +72,35 @@
             <thead class="table-light text-center">
                 <tr>
                     <th>#</th>
+                    <th>Kategori</th>
                     <th>Nama Tabungan</th>
                     <th>Target</th>
                     <th>Jumlah Saat Ini</th>
                     <th>Progress</th>
+                    <th>Target Date</th>
+                    <th>Status</th>
                     <th>Aksi</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach ($savings as $index => $saving)
-                <tr>
+                <tr class="{{ $saving->status === 'overdue' ? 'table-warning' : ($saving->status === 'completed' ? 'table-success' : '') }}">
                     <td class="text-center">{{ $index + 1 }}</td>
-                    <td><strong>{{ $saving->name }}</strong></td>
+                    <td class="text-center">
+                        @if($saving->category)
+                            <span class="badge" style="background-color: {{ $saving->category->color }};">
+                                {{ $saving->category->icon }} {{ $saving->category->name }}
+                            </span>
+                        @else
+                            <span class="text-muted">-</span>
+                        @endif
+                    </td>
+                    <td>
+                        <strong>{{ $saving->name }}</strong>
+                        @if($saving->is_completed)
+                            <span class="badge bg-success ms-1">✓ Selesai</span>
+                        @endif
+                    </td>
                     <td class="text-end">
                         @if (!$saving->is_shared)
                             Rp {{ number_format($saving->target_amount, 0, ',', '.') }}
@@ -58,20 +109,60 @@
                         @endif
                     </td>
                     <td class="text-end">Rp {{ number_format($saving->current_amount, 0, ',', '.') }}</td>
-                    <td>
+                    <td style="min-width: 150px;">
                         @if (!$saving->is_shared)
-                            <div class="progress" style="height: 14px;">
-                                <div class="progress-bar {{ $saving->progress >= 100 ? 'bg-success' : 'bg-info' }}" 
-                                    role="progressbar" 
-                                    style="width: {{ $saving->progress }}%;" 
-                                    aria-valuenow="{{ $saving->progress }}" 
-                                    aria-valuemin="0" 
-                                    aria-valuemax="100">
-                                    {{ round($saving->progress, 2) }}%
+                            <div class="d-flex align-items-center">
+                                <div class="progress flex-grow-1" style="height: 20px;">
+                                    <div class="progress-bar
+                                        {{ $saving->progress >= 100 ? 'bg-success' :
+                                           ($saving->status === 'overdue' ? 'bg-danger' :
+                                           ($saving->status === 'urgent' ? 'bg-warning' : 'bg-info')) }}"
+                                        role="progressbar"
+                                        style="width: {{ min(100, $saving->progress) }}%;"
+                                        aria-valuenow="{{ $saving->progress }}"
+                                        aria-valuemin="0"
+                                        aria-valuemax="100">
+                                        {{ round($saving->progress, 1) }}%
+                                    </div>
                                 </div>
                             </div>
+                            {{-- Milestone markers --}}
+                            <div class="mt-1 d-flex justify-content-between" style="font-size: 10px;">
+                                <span {{ $saving->last_notified_milestone >= 25 ? 'class="text-success"' : '' }}>🌱</span>
+                                <span {{ $saving->last_notified_milestone >= 50 ? 'class="text-success"' : '' }}>📈</span>
+                                <span {{ $saving->last_notified_milestone >= 75 ? 'class="text-success"' : '' }}>🔥</span>
+                                <span {{ $saving->last_notified_milestone >= 100 ? 'class="text-success"' : '' }}>🎉</span>
+                            </div>
+                        @else
+                            <span class="text-muted">Umum</span>
+                        @endif
+                    </td>
+                    <td class="text-center">
+                        @if($saving->target_date)
+                            {{ $saving->formatted_target_date }}
+                            @if($saving->days_remaining !== null)
+                                <br>
+                                <small class="{{ $saving->days_remaining < 0 ? 'text-danger' : ($saving->days_remaining <= 7 ? 'text-warning' : 'text-muted') }}">
+                                    {{ $saving->days_remaining < 0 ? 'Terlewat' : $saving->days_remaining . ' hari lagi' }}
+                                </small>
+                            @endif
                         @else
                             <span class="text-muted">-</span>
+                        @endif
+                    </td>
+                    <td class="text-center">
+                        @if($saving->is_completed)
+                            <span class="badge bg-success">✓ Selesai</span>
+                        @elseif($saving->is_shared)
+                            <span class="badge bg-secondary">Umum</span>
+                        @elseif($saving->is_overdue)
+                            <span class="badge bg-danger">⚠️ Terlewat</span>
+                        @elseif($saving->status === 'urgent')
+                            <span class="badge bg-warning">⏰ Urgent</span>
+                        @elseif($saving->progress >= 100)
+                            <span class="badge bg-info">Siap Selesai</span>
+                        @else
+                            <span class="badge bg-primary">On Track</span>
                         @endif
                     </td>
                     <td class="text-center">
@@ -143,7 +234,7 @@
                     callbacks: {
                         label: function (tooltipItem) {
                             let value = tooltipItem.raw || 0;
-                            return ` Rp ${value.toLocaleString('id-ID')}`;
+                            return `Rp ${value.toLocaleString('id-ID')}`;
                         }
                     }
                 }

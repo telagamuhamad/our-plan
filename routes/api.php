@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\MissingYouController;
 use App\Http\Controllers\Api\QuestionController;
 use App\Http\Controllers\Api\SavingApiController;
 use App\Http\Controllers\Api\SavingTransactionApiController;
+use App\Http\Controllers\SavingCategoryController;
 use App\Http\Controllers\Api\TaskController;
 use App\Http\Controllers\Api\TimelineApiController;
 use App\Http\Controllers\Api\TravelApiController;
@@ -101,6 +102,17 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::delete('destroy/{savingId}', [SavingApiController::class, 'destroy'])->name('savings.destroy');
             Route::post('{savingId}/transactions', [SavingTransactionApiController::class, 'store'])->name('savings.transactions.store');
             Route::post('/transfer', [SavingApiController::class, 'transfer'])->name('savings.transfer');
+            Route::get('upcoming-deadlines', [SavingApiController::class, 'upcomingDeadlines'])->name('savings.upcoming-deadlines');
+            Route::get('overdue', [SavingApiController::class, 'overdue'])->name('savings.overdue');
+            Route::post('{savingId}/mark-completed', [SavingApiController::class, 'markCompleted'])->name('savings.mark-completed');
+        });
+
+        // Saving Categories
+        Route::prefix('saving-categories')->group(function () {
+            Route::get('/', [SavingCategoryController::class, 'index'])->name('saving-categories.index');
+            Route::post('/', [SavingCategoryController::class, 'store'])->name('saving-categories.store');
+            Route::put('/{id}', [SavingCategoryController::class, 'update'])->name('saving-categories.update');
+            Route::delete('/{id}', [SavingCategoryController::class, 'destroy'])->name('saving-categories.destroy');
         });
 
         // Timeline
