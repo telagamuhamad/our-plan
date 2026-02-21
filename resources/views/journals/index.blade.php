@@ -53,7 +53,7 @@
                             <p class="card-text text-muted small mb-2">{{ Str::limit($journal->content, 150) }}</p>
 
                             <div class="d-flex align-items-center gap-2 mb-2">
-                                <span class="badge bg-light text-dark">{{ $journal->mood_emoji }}</span>
+                                <span class="badge bg-primary bg-opacity-10 text-primary border border-primary">{{ $journal->mood_emoji }}</span>
                                 @if($journal->weather)
                                 <span class="badge bg-info text-white">🌤️ {{ $journal->weather }}</span>
                                 @endif

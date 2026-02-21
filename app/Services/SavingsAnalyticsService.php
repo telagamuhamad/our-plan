@@ -16,9 +16,8 @@ class SavingsAnalyticsService
      */
     public function getUserAnalytics(User $user, $period = 'all')
     {
-        $savings = Saving::where('user_id', $user->id)
-            ->with('category')
-            ->get();
+        // Get savings for user and their couple (if any)
+        $savings = $this->getUserSavings($user)->load('category');
 
         $transactions = SavingTransaction::whereIn('saving_id', $savings->pluck('id'))
             ->when($period !== 'all', function ($q) use ($period) {
@@ -34,6 +33,38 @@ class SavingsAnalyticsService
             'recent_activity' => $this->getRecentActivity($transactions),
             'monthly_summary' => $this->getMonthlySummary($transactions),
         ];
+    }
+
+    /**
+     * Get savings for a user (including their couple's savings if applicable)
+     */
+    protected function getUserSavings(User $user)
+    {
+        $query = Saving::with('category');
+
+        // Check if user has an active couple
+        if ($user->hasActiveCouple()) {
+            $couple = $user->couple;
+            if ($couple) {
+                $partner = $couple->getPartner($user);
+                if ($partner) {
+                    // Get savings from both users in the couple, plus shared savings (user_id is NULL)
+                    $query->where(function ($q) use ($user, $partner) {
+                        $q->where('user_id', $user->id)
+                          ->orWhere('user_id', $partner->id)
+                          ->orWhereNull('user_id');
+                    });
+                }
+            }
+        } else {
+            // Get user's own savings plus shared savings (user_id is NULL)
+            $query->where(function ($q) use ($user) {
+                $q->where('user_id', $user->id)
+                  ->orWhereNull('user_id');
+            });
+        }
+
+        return $query->get();
     }
 
     /**
@@ -132,6 +163,7 @@ class SavingsAnalyticsService
                     'progress' => round($saving->progress, 1),
                     'status' => $saving->status,
                     'is_completed' => $saving->is_completed,
+                    'is_overdue' => $saving->is_overdue ?? false,
                     'target_date' => $saving->target_date?->format('Y-m-d'),
                     'days_remaining' => $saving->days_remaining,
                     'category' => $saving->category ? [
@@ -150,6 +182,9 @@ class SavingsAnalyticsService
      */
     protected function getRecentActivity($transactions)
     {
+        // Load the saving relationship to avoid N+1 queries
+        $transactions->load('savingData');
+
         return $transactions->sortByDesc('created_at')
             ->take(20)
             ->map(function ($t) {
@@ -159,7 +194,7 @@ class SavingsAnalyticsService
                     'amount' => $t->amount,
                     'note' => $t->note,
                     'date' => $t->created_at->format('d M Y H:i'),
-                    'saving_name' => $t->saving->name,
+                    'saving_name' => $t->savingData ? $t->savingData->name : 'Unknown',
                 ];
             })
             ->values();
@@ -198,7 +233,7 @@ class SavingsAnalyticsService
      */
     public function getSavingsGrowth(User $user, $period = '6months')
     {
-        $savings = Saving::where('user_id', $user->id)->get();
+        $savings = $this->getUserSavings($user);
         $savingIds = $savings->pluck('id');
 
         $startDate = match($period) {
@@ -241,9 +276,7 @@ class SavingsAnalyticsService
      */
     public function getCategoryDistribution(User $user)
     {
-        $savings = Saving::where('user_id', $user->id)
-            ->with('category')
-            ->get();
+        $savings = $this->getUserSavings($user)->load('category');
 
         $totalAmount = $savings->sum('current_amount');
 
@@ -274,14 +307,13 @@ class SavingsAnalyticsService
      */
     public function getUpcomingTargets(User $user, $limit = 5)
     {
-        return Saving::where('user_id', $user->id)
+        return $this->getUserSavings($user)
             ->where('is_shared', false)
             ->whereNull('completed_at')
             ->whereNotNull('target_date')
-            ->with('category')
-            ->orderBy('target_date')
+            ->load('category')
+            ->sortBy('target_date')
             ->take($limit)
-            ->get()
             ->map(function ($saving) {
                 return [
                     'id' => $saving->id,
@@ -323,7 +355,7 @@ class SavingsAnalyticsService
      */
     public function comparePeriods(User $user, $currentPeriod = 'month')
     {
-        $savings = Saving::where('user_id', $user->id)->pluck('id');
+        $savings = $this->getUserSavings($user)->pluck('id');
 
         $currentTransactions = SavingTransaction::whereIn('saving_id', $savings)
             ->where('created_at', '>=', $this->getPeriodStart($currentPeriod))

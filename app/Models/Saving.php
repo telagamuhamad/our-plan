@@ -230,10 +230,10 @@ class Saving extends Model
 
         return [
             'is_overdue' => false,
-            'days' => $diff->d,
+            'days' => $diff->days, // Use total days, not just days component
             'hours' => $diff->h,
             'minutes' => $diff->i,
-            'message' => sprintf('%d hari lagi menuju target!', $diff->d),
+            'message' => sprintf('%d hari lagi menuju target!', $diff->days),
             'total_seconds' => $totalSeconds,
         ];
     }

@@ -19,6 +19,15 @@ class SavingsAnalyticsController extends Controller
     {
         $period = $request->get('period', 'all');
 
+        // Map period to growth period
+        $growthPeriod = match($period) {
+            'all' => '1year',
+            'year' => '1year',
+            'quarter' => '3months',
+            'month' => '1month',
+            default => '6months',
+        };
+
         if ($request->ajax()) {
             $analytics = $this->analyticsService->getUserAnalytics($request->user(), $period);
             return response()->json(['data' => $analytics]);
@@ -26,7 +35,7 @@ class SavingsAnalyticsController extends Controller
 
         $analytics = $this->analyticsService->getUserAnalytics($request->user(), $period);
         $upcoming = $this->analyticsService->getUpcomingTargets($request->user());
-        $growth = $this->analyticsService->getSavingsGrowth($request->user(), '6months');
+        $growth = $this->analyticsService->getSavingsGrowth($request->user(), $growthPeriod);
         $categoryDistribution = $this->analyticsService->getCategoryDistribution($request->user());
 
         return view('savings.analytics', [

@@ -263,19 +263,34 @@
         <ul class="list-group">
             @foreach ($savingTransactions as $transaction)
                 <li class="list-group-item d-flex justify-content-between align-items-center">
-                    <div>
-                        <span class="badge
-                            {{ $transaction->type === 'deposit' ? 'bg-success' : ($transaction->type === 'withdrawal' ? 'bg-danger' : 'bg-secondary') }}">
-                            {{ $transaction->type === 'deposit' ? '✅' : ($transaction->type === 'withdrawal' ? '❌' : '🔄') }}
-                            {{ ucfirst($transaction->type) }}
-                        </span>
-                        <strong>{{ $transaction->user->name ?? 'Unknown' }}</strong>
-                        <span class="fw-bold {{ $transaction->type === 'deposit' ? 'text-success' : 'text-danger' }}">
-                            Rp {{ number_format($transaction->amount, 0, ',', '.') }}
-                        </span>
-                        @if ($transaction->note)
-                            – <em class="text-muted">{{ $transaction->note }}</em>
+                    <div class="d-flex align-items-center gap-2">
+                        @if($transaction->user->avatar_url ?? null)
+                            <img src="{{ $transaction->user->avatar_url }}"
+                                 alt="{{ e($transaction->user->name ?? 'Unknown') }}"
+                                 class="rounded-circle flex-shrink-0"
+                                 style="width: 32px; height: 32px; object-fit: cover;">
+                        @else
+                            <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center flex-shrink-0"
+                                 style="width: 32px; height: 32px; font-size: 14px;">
+                                {{ strtoupper(substr($transaction->user->name ?? 'U', 0, 1)) }}
+                            </div>
                         @endif
+                        <div>
+                            <div class="mb-1">
+                                <span class="badge
+                                    {{ $transaction->type === 'deposit' ? 'bg-success' : ($transaction->type === 'withdrawal' ? 'bg-danger' : 'bg-secondary') }}">
+                                    {{ $transaction->type === 'deposit' ? '✅' : ($transaction->type === 'withdrawal' ? '❌' : '🔄') }}
+                                    {{ ucfirst($transaction->type) }}
+                                </span>
+                                <strong class="ms-1">{{ $transaction->user->name ?? 'Unknown' }}</strong>
+                            </div>
+                            <span class="fw-bold {{ $transaction->type === 'deposit' ? 'text-success' : 'text-danger' }}">
+                                Rp {{ number_format($transaction->amount, 0, ',', '.') }}
+                            </span>
+                            @if ($transaction->note)
+                                <em class="text-muted">– {{ $transaction->note }}</em>
+                            @endif
+                        </div>
                     </div>
                     <small class="text-muted">{{ $transaction->created_at->format('d M Y H:i') }}</small>
                 </li>
@@ -285,10 +300,12 @@
 
     <a href="{{ route('savings.index') }}" class="btn btn-secondary mt-4">⬅️ Kembali ke Savings Tracker</a>
 </div>
+@endsection
 
+@push('modals')
 {{-- Create Recurring Saving Modal --}}
-<div class="modal fade" id="createRecurringModal" tabindex="-1">
-    <div class="modal-dialog">
+<div class="modal fade" id="createRecurringModal" tabindex="-1" data-bs-backdrop="true" data-bs-keyboard="true">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <form action="{{ route('recurring-savings.store') }}" method="POST">
                 @csrf
@@ -340,8 +357,8 @@
 
 {{-- Edit Recurring Saving Modals --}}
 @foreach($recurringSavings as $recurring)
-<div class="modal fade" id="editRecurringModal{{ $recurring->id }}" tabindex="-1">
-    <div class="modal-dialog">
+<div class="modal fade" id="editRecurringModal{{ $recurring->id }}" tabindex="-1" data-bs-backdrop="true" data-bs-keyboard="true">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <form action="{{ route('recurring-savings.update', $recurring->id) }}" method="POST">
                 @csrf
@@ -387,4 +404,4 @@
     </div>
 </div>
 @endforeach
-@endsection
+@endpush

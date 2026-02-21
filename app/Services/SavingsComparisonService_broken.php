@@ -59,23 +59,32 @@ class SavingsComparisonService
         $userSavings = $this->getUserSavingsData($user);
         $partnerSavings = $this->getUserSavingsData($partner);
 
-        $combinedDeposits = $userSavings['deposits'] + $partnerSavings['deposits'];
-
         return [
             'user' => [
+                'total_savings' => $userSavings['total'],
+                'total_target' => $userSavings['target'],
+                'completed_count' => $userSavings['completed'],
+                'active_count' => $userSavings['active'],
+                'completion_rate' => $userSavings['completion_rate'],
                 'total_deposits' => $userSavings['deposits'],
                 'total_withdrawals' => $userSavings['withdrawals'],
             ],
             'partner' => [
+                'total_savings' => $partnerSavings['total'],
+                'total_target' => $partnerSavings['target'],
+                'completed_count' => $partnerSavings['completed'],
+                'active_count' => $partnerSavings['active'],
+                'completion_rate' => $partnerSavings['completion_rate'],
                 'total_deposits' => $partnerSavings['deposits'],
                 'total_withdrawals' => $partnerSavings['withdrawals'],
             ],
             'combined' => [
-                'total_deposits' => $combinedDeposits,
-                'user_contribution' => $this->calculateContribution($userSavings['deposits'], $partnerSavings['deposits']),
-                'partner_contribution' => $this->calculateContribution($partnerSavings['deposits'], $userSavings['deposits']),
+                'total_savings' => $userSavings['total'] + $partnerSavings['total'],
+                'total_target' => $userSavings['target'] + $partnerSavings['target'],
+                'user_contribution' => $this->calculateContribution($userSavings['total'], $partnerSavings['total']),
+                'partner_contribution' => $this->calculateContribution($partnerSavings['total'], $userSavings['total']),
             ],
-            'leader' => $userSavings['deposits'] >= $partnerSavings['deposits'] ? 'user' : 'partner',
+            'leader' => $this->determineLeader($userSavings, $partnerSavings),
         ];
     }
 
@@ -84,11 +93,17 @@ class SavingsComparisonService
      */
     protected function getSavingsListComparison(User $user, User $partner)
     {
-        // Get all savings (including shared) for categories
-        $allSavings = Saving::with('category')->get();
+        $userSavings = Saving::where('user_id', $user->id)
+            ->with('category')
+            ->get();
 
-        // Get all unique categories
-        $allCategories = $allSavings->pluck('category')
+        $partnerSavings = Saving::where('user_id', $partner->id)
+            ->with('category')
+            ->get();
+
+        // Combine all unique categories
+        $allCategories = $userSavings->pluck('category')
+            ->merge($partnerSavings->pluck('category'))
             ->filter()
             ->unique('id')
             ->sortBy('name');
@@ -96,19 +111,8 @@ class SavingsComparisonService
         $comparison = [];
 
         foreach ($allCategories as $category) {
-            // Get saving IDs in this category
-            $savingIdsInCategory = $allSavings->where('category_id', $category->id)->pluck('id');
-
-            // Get deposit amounts for each user in this category
-            $userDeposits = SavingTransaction::whereIn('saving_id', $savingIdsInCategory)
-                ->where('actor_user_id', $user->id)
-                ->where('type', 'deposit')
-                ->sum('amount');
-
-            $partnerDeposits = SavingTransaction::whereIn('saving_id', $savingIdsInCategory)
-                ->where('actor_user_id', $partner->id)
-                ->where('type', 'deposit')
-                ->sum('amount');
+            $userInCategory = $userSavings->where('category_id', $category->id);
+            $partnerInCategory = $partnerSavings->where('category_id', $category->id);
 
             $comparison[] = [
                 'category' => [
@@ -118,31 +122,22 @@ class SavingsComparisonService
                     'color' => $category->color,
                 ],
                 'user' => [
-                    'amount' => $userDeposits,
-                    'count' => 0, // Not applicable for deposits
+                    'amount' => $userInCategory->sum('current_amount'),
+                    'count' => $userInCategory->count(),
                 ],
                 'partner' => [
-                    'amount' => $partnerDeposits,
-                    'count' => 0, // Not applicable for deposits
+                    'amount' => $partnerInCategory->sum('current_amount'),
+                    'count' => $partnerInCategory->count(),
                 ],
-                'leader' => $userDeposits >= $partnerDeposits ? 'user' : 'partner',
+                'leader' => $userInCategory->sum('current_amount') >= $partnerInCategory->sum('current_amount') ? 'user' : 'partner',
             ];
         }
 
         // Add savings without category
-        $savingIdsNoCategory = $allSavings->whereNull('category_id')->pluck('id');
+        $userNoCategory = $userSavings->whereNull('category_id');
+        $partnerNoCategory = $partnerSavings->whereNull('category_id');
 
-        if ($savingIdsNoCategory->count() > 0) {
-            $userNoCategoryDeposits = SavingTransaction::whereIn('saving_id', $savingIdsNoCategory)
-                ->where('actor_user_id', $user->id)
-                ->where('type', 'deposit')
-                ->sum('amount');
-
-            $partnerNoCategoryDeposits = SavingTransaction::whereIn('saving_id', $savingIdsNoCategory)
-                ->where('actor_user_id', $partner->id)
-                ->where('type', 'deposit')
-                ->sum('amount');
-
+        if ($userNoCategory->count() > 0 || $partnerNoCategory->count() > 0) {
             $comparison[] = [
                 'category' => [
                     'id' => null,
@@ -151,14 +146,14 @@ class SavingsComparisonService
                     'color' => '#6c757d',
                 ],
                 'user' => [
-                    'amount' => $userNoCategoryDeposits,
-                    'count' => 0,
+                    'amount' => $userNoCategory->sum('current_amount'),
+                    'count' => $userNoCategory->count(),
                 ],
                 'partner' => [
-                    'amount' => $partnerNoCategoryDeposits,
-                    'count' => 0,
+                    'amount' => $partnerNoCategory->sum('current_amount'),
+                    'count' => $partnerNoCategory->count(),
                 ],
-                'leader' => $userNoCategoryDeposits >= $partnerNoCategoryDeposits ? 'user' : 'partner',
+                'leader' => $userNoCategory->sum('current_amount') >= $partnerNoCategory->sum('current_amount') ? 'user' : 'partner',
             ];
         }
 
@@ -178,14 +173,9 @@ class SavingsComparisonService
             $months[] = $date->format('Y-m');
         }
 
-        // Get saving IDs for both users (including shared savings)
-        $userSavingIds = Saving::where(function ($query) use ($user) {
-            $query->where('user_id', $user->id)->orWhereNull('user_id');
-        })->pluck('id');
-
-        $partnerSavingIds = Saving::where(function ($query) use ($partner) {
-            $query->where('user_id', $partner->id)->orWhereNull('user_id');
-        })->pluck('id');
+        // Get saving IDs for both users
+        $userSavingIds = Saving::where('user_id', $user->id)->pluck('id');
+        $partnerSavingIds = Saving::where('user_id', $partner->id)->pluck('id');
 
         $contributions = [];
 
@@ -219,36 +209,17 @@ class SavingsComparisonService
      */
     protected function getCategoryComparison(User $user, User $partner)
     {
-        // Get personal savings for each user
-        $userPersonalSavings = Saving::where('user_id', $user->id)->with('category')->get();
-        $partnerPersonalSavings = Saving::where('user_id', $partner->id)->with('category')->get();
-
-        // Get shared savings (user_id is NULL)
-        $sharedSavings = Saving::whereNull('user_id')->with('category')->get();
-
-        // Split shared savings equally between both users
-        $userSavings = $userPersonalSavings->concat($sharedSavings);
-        $partnerSavings = $partnerPersonalSavings->concat($sharedSavings);
+        $userSavings = Saving::where('user_id', $user->id)->with('category')->get();
+        $partnerSavings = Saving::where('user_id', $partner->id)->with('category')->get();
 
         $categories = $userSavings->pluck('category')
             ->merge($partnerSavings->pluck('category'))
             ->filter()
             ->unique('id');
 
-        return $categories->map(function ($category) use ($userSavings, $partnerSavings, $user, $partner) {
+        return $categories->map(function ($category) use ($userSavings, $partnerSavings) {
             $userInCategory = $userSavings->where('category_id', $category->id);
             $partnerInCategory = $partnerSavings->where('category_id', $category->id);
-
-            // For shared savings, split the amount equally
-            $userSharedAmount = $userInCategory->whereNull('user_id')->sum('current_amount') / 2;
-            $partnerSharedAmount = $partnerInCategory->whereNull('user_id')->sum('current_amount') / 2;
-
-            $userAmount = $userInCategory->where('user_id', $user->id)->sum('current_amount') + $userSharedAmount;
-            $partnerAmount = $partnerInCategory->where('user_id', $partner->id)->sum('current_amount') + $partnerSharedAmount;
-
-            // Calculate totals for percentage
-            $userTotal = $userSavings->sum('current_amount') / 2; // Split shared
-            $partnerTotal = $partnerSavings->sum('current_amount') / 2; // Split shared
 
             return [
                 'category' => [
@@ -258,12 +229,12 @@ class SavingsComparisonService
                     'color' => $category->color,
                 ],
                 'user' => [
-                    'amount' => $userAmount,
-                    'percentage' => $this->calculatePercentage($userAmount, $userTotal),
+                    'amount' => $userInCategory->sum('current_amount'),
+                    'percentage' => $this->calculatePercentage($userInCategory->sum('current_amount'), $userSavings->sum('current_amount')),
                 ],
                 'partner' => [
-                    'amount' => $partnerAmount,
-                    'percentage' => $this->calculatePercentage($partnerAmount, $partnerTotal),
+                    'amount' => $partnerInCategory->sum('current_amount'),
+                    'percentage' => $this->calculatePercentage($partnerInCategory->sum('current_amount'), $partnerSavings->sum('current_amount')),
                 ],
             ];
         })->values();
@@ -274,32 +245,19 @@ class SavingsComparisonService
      */
     protected function getGoalsProgressComparison(User $user, User $partner)
     {
-        // Get personal goals for each user (user_id matches)
-        $userPersonalGoals = Saving::where('user_id', $user->id)
+        $userGoals = Saving::where('user_id', $user->id)
             ->where('is_shared', false)
             ->whereNotNull('target_amount')
             ->whereNull('completed_at')
             ->with('category')
             ->get();
 
-        $partnerPersonalGoals = Saving::where('user_id', $partner->id)
+        $partnerGoals = Saving::where('user_id', $partner->id)
             ->where('is_shared', false)
             ->whereNotNull('target_amount')
             ->whereNull('completed_at')
             ->with('category')
             ->get();
-
-        // Get shared goals (user_id is NULL) - these appear for both users
-        $sharedGoals = Saving::whereNull('user_id')
-            ->where('is_shared', false)
-            ->whereNotNull('target_amount')
-            ->whereNull('completed_at')
-            ->with('category')
-            ->get();
-
-        // Merge personal goals with shared goals for each user
-        $userGoals = $userPersonalGoals->concat($sharedGoals);
-        $partnerGoals = $partnerPersonalGoals->concat($sharedGoals);
 
         return [
             'user' => $userGoals->map(function ($goal) {
@@ -340,14 +298,8 @@ class SavingsComparisonService
      */
     protected function getTransactionsSummary(User $user, User $partner)
     {
-        // Get saving IDs including shared savings
-        $userSavingIds = Saving::where(function ($query) use ($user) {
-            $query->where('user_id', $user->id)->orWhereNull('user_id');
-        })->pluck('id');
-
-        $partnerSavingIds = Saving::where(function ($query) use ($partner) {
-            $query->where('user_id', $partner->id)->orWhereNull('user_id');
-        })->pluck('id');
+        $userSavingIds = Saving::where('user_id', $user->id)->pluck('id');
+        $partnerSavingIds = Saving::where('user_id', $partner->id)->pluck('id');
 
         $userTransactionCount = SavingTransaction::whereIn('saving_id', $userSavingIds)->count();
         $partnerTransactionCount = SavingTransaction::whereIn('saving_id', $partnerSavingIds)->count();
@@ -389,10 +341,7 @@ class SavingsComparisonService
     protected function getUserAchievements(User $user)
     {
         $achievements = [];
-        // Get personal savings and shared savings
-        $savings = Saving::where(function ($query) use ($user) {
-            $query->where('user_id', $user->id)->orWhereNull('user_id');
-        })->get();
+        $savings = Saving::where('user_id', $user->id)->get();
         $savingIds = $savings->pluck('id');
         $transactions = SavingTransaction::whereIn('saving_id', $savingIds)->get();
 
@@ -461,11 +410,9 @@ class SavingsComparisonService
      */
     protected function getUserSavingsData(User $user)
     {
-        // Get savings owned by this user (user_id matches) OR shared savings (user_id is NULL)
-        $savings = Saving::where(function ($query) use ($user) {
-            $query->where('user_id', $user->id)
-                  ->orWhereNull('user_id');
-        })->get();
+        // Get savings owned by this user (based on user_id in savings table)
+        $savings = Saving::where('user_id', $user->id)->get();
+        $savingIds = $savings->pluck('id');
 
         // Get transactions performed by this user (based on actor_user_id)
         $userDeposits = SavingTransaction::where('actor_user_id', $user->id)
@@ -476,26 +423,13 @@ class SavingsComparisonService
             ->where('type', 'withdrawal')
             ->sum('amount');
 
-        // For shared savings (user_id is NULL), split them equally for comparison
-        $sharedSavings = $savings->whereNull('user_id');
-        $personalSavings = $savings->where('user_id', $user->id);
-
-        $totalSavings = $personalSavings->sum('current_amount') + ($sharedSavings->sum('current_amount') / 2);
-        $totalTarget = $personalSavings->where('is_shared', false)->sum('target_amount') + ($sharedSavings->where('is_shared', false)->sum('target_amount') / 2);
-
-        $personalCount = $personalSavings->where('is_shared', false)->count();
-        $sharedCount = $sharedSavings->where('is_shared', false)->count();
-        $totalGoalsCount = $personalCount + $sharedCount;
-
-        $completedCount = $personalSavings->whereNotNull('completed_at')->count() + $sharedSavings->whereNotNull('completed_at')->count();
-
         return [
-            'total' => $totalSavings,
-            'target' => $totalTarget,
-            'completed' => $completedCount,
-            'active' => $totalGoalsCount - $completedCount,
-            'completion_rate' => $totalGoalsCount > 0
-                ? round(($completedCount / $totalGoalsCount) * 100, 1)
+            'total' => $savings->sum('current_amount'),
+            'target' => $savings->where('is_shared', false)->sum('target_amount'),
+            'completed' => $savings->whereNotNull('completed_at')->count(),
+            'active' => $savings->whereNull('completed_at')->count(),
+            'completion_rate' => $savings->where('is_shared', false')->count() > 0
+                ? round(($savings->whereNotNull('completed_at')->count() / $savings->where('is_shared', false)->count()) * 100, 1)
                 : 0,
             'deposits' => $userDeposits,
             'withdrawals' => $userWithdrawals,
@@ -539,10 +473,7 @@ class SavingsComparisonService
      */
     protected function getAverageTransactionAmount(User $user)
     {
-        // Get saving IDs including shared savings
-        $savingIds = Saving::where(function ($query) use ($user) {
-            $query->where('user_id', $user->id)->orWhereNull('user_id');
-        })->pluck('id');
+        $savingIds = Saving::where('user_id', $user->id)->pluck('id');
         return SavingTransaction::whereIn('saving_id', $savingIds)->avg('amount') ?? 0;
     }
 }

@@ -226,9 +226,16 @@
                 <div class="card-body">
                     <h6 class="card-title mb-2">Created By</h6>
                     <div class="d-flex align-items-center gap-2">
-                        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
-                            {{ strtoupper(substr($goal->creator->name ?? '?', 0, 1)) }}
-                        </div>
+                        @if($goal->creator->avatar_url ?? null)
+                            <img src="{{ $goal->creator->avatar_url }}"
+                                 alt="{{ e($goal->creator->name ?? 'Unknown') }}"
+                                 class="rounded-circle"
+                                 style="width: 40px; height: 40px; object-fit: cover;">
+                        @else
+                            <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                {{ strtoupper(substr($goal->creator->name ?? '?', 0, 1)) }}
+                            </div>
+                        @endif
                         <div>
                             <div class="fw-semibold">{{ $goal->creator->name ?? 'Unknown' }}</div>
                             <small class="text-muted">{{ $goal->created_at->format('M d, Y') }}</small>

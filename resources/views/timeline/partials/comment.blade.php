@@ -1,8 +1,15 @@
 <div class="comment-item d-flex gap-2 mb-2" data-comment-id="{{ $comment->id }}">
-    <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center flex-shrink-0"
-         style="width: 32px; height: 32px; font-size: 14px;">
-        {{ strtoupper(substr($comment->author->name ?? 'A', 0, 1)) }}
-    </div>
+    @if($comment->author->avatar_url ?? null)
+        <img src="{{ $comment->author->avatar_url }}"
+             alt="{{ e($comment->author->name ?? 'Unknown') }}"
+             class="rounded-circle flex-shrink-0"
+             style="width: 32px; height: 32px; object-fit: cover;">
+    @else
+        <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center flex-shrink-0"
+             style="width: 32px; height: 32px; font-size: 14px;">
+            {{ strtoupper(substr($comment->author->name ?? 'A', 0, 1)) }}
+        </div>
+    @endif
     <div class="flex-grow-1">
         <div class="bg-light rounded p-2">
             <div class="d-flex justify-content-between align-items-start">

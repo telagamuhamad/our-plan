@@ -19,7 +19,7 @@
             <div class="card text-center">
                 <div class="card-body">
                     @if($comparison['users']['user']['avatar_url'])
-                        <img src="{{ $comparison['users']['user']['avatar_url'] }}" alt="{{ $comparison['users']['user']['name'] }}" class="rounded-circle mb-2" width="80" height="80">
+                        <img src="{{ $comparison['users']['user']['avatar_url'] }}" alt="{{ $comparison['users']['user']['name'] }}" class="rounded-circle mb-2" style="width: 80px; height: 80px; object-fit: cover;">
                     @else
                         <div class="rounded-circle bg-primary d-inline-flex align-items-center justify-content-center mb-2" style="width: 80px; height: 80px;">
                             <span class="text-white fs-3">{{ substr($comparison['users']['user']['name'], 0, 1) }}</span>
@@ -34,7 +34,7 @@
             <div class="card text-center">
                 <div class="card-body">
                     @if($comparison['users']['partner']['avatar_url'])
-                        <img src="{{ $comparison['users']['partner']['avatar_url'] }}" alt="{{ $comparison['users']['partner']['name'] }}" class="rounded-circle mb-2" width="80" height="80">
+                        <img src="{{ $comparison['users']['partner']['avatar_url'] }}" alt="{{ $comparison['users']['partner']['name'] }}" class="rounded-circle mb-2" style="width: 80px; height: 80px; object-fit: cover;">
                     @else
                         <div class="rounded-circle bg-info d-inline-flex align-items-center justify-content-center mb-2" style="width: 80px; height: 80px;">
                             <span class="text-white fs-3">{{ substr($comparison['users']['partner']['name'], 0, 1) }}</span>
@@ -61,20 +61,20 @@
         </div>
         <div class="card-body">
             <div class="row">
-                {{-- Total Savings --}}
-                <div class="col-md-4 mb-3">
-                    <h6 class="text-muted">Total Savings</h6>
+                {{-- Total Deposits --}}
+                <div class="col-md-6 mb-3">
+                    <h6 class="text-muted">Total Deposits</h6>
                     <div class="d-flex justify-content-between align-items-center mb-2">
                         <div class="text-center flex-grow-1">
                             <small>You</small>
-                            <h4 class="text-primary">Rp {{ number_format($comparison['overview']['user']['total_savings'], 0, ',', '.') }}</h4>
+                            <h4 class="text-primary">Rp {{ number_format($comparison['overview']['user']['total_deposits'], 0, ',', '.') }}</h4>
                         </div>
                         <div class="text-center flex-grow-1">
                             <small>Partner</small>
-                            <h4 class="text-info">Rp {{ number_format($comparison['overview']['partner']['total_savings'], 0, ',', '.') }}</h4>
+                            <h4 class="text-info">Rp {{ number_format($comparison['overview']['partner']['total_deposits'], 0, ',', '.') }}</h4>
                         </div>
                     </div>
-                    @if($comparison['overview']['combined']['total_savings'] > 0)
+                    @if($comparison['overview']['combined']['total_deposits'] > 0)
                         <div class="progress" style="height: 25px;">
                             <div class="progress-bar bg-primary" style="width: {{ $comparison['overview']['combined']['user_contribution'] }}%">
                                 {{ $comparison['overview']['combined']['user_contribution'] }}%
@@ -84,43 +84,22 @@
                             </div>
                         </div>
                         <div class="text-center mt-1">
-                            <strong>Combined: Rp {{ number_format($comparison['overview']['combined']['total_savings'], 0, ',', '.') }}</strong>
+                            <strong>Combined: Rp {{ number_format($comparison['overview']['combined']['total_deposits'], 0, ',', '.') }}</strong>
                         </div>
                     @endif
                 </div>
 
-                {{-- Completion Rate --}}
-                <div class="col-md-4 mb-3">
-                    <h6 class="text-muted">Completion Rate</h6>
+                {{-- Total Withdrawals --}}
+                <div class="col-md-6 mb-3">
+                    <h6 class="text-muted">Total Withdrawals</h6>
                     <div class="d-flex justify-content-between">
                         <div class="text-center">
                             <small>You</small>
-                            <h3 class="{{ $comparison['overview']['user']['completion_rate'] >= 50 ? 'text-success' : 'text-warning' }}">
-                                {{ $comparison['overview']['user']['completion_rate'] }}%
-                            </h3>
-                            <small class="text-muted">{{ $comparison['overview']['user']['completed_count'] }}/{{ $comparison['overview']['user']['active_count'] + $comparison['overview']['user']['completed_count'] }}</small>
+                            <h4 class="text-danger">Rp {{ number_format($comparison['overview']['user']['total_withdrawals'], 0, ',', '.') }}</h4>
                         </div>
                         <div class="text-center">
                             <small>Partner</small>
-                            <h3 class="{{ $comparison['overview']['partner']['completion_rate'] >= 50 ? 'text-success' : 'text-warning' }}">
-                                {{ $comparison['overview']['partner']['completion_rate'] }}%
-                            </h3>
-                            <small class="text-muted">{{ $comparison['overview']['partner']['completed_count'] }}/{{ $comparison['overview']['partner']['active_count'] + $comparison['overview']['partner']['completed_count'] }}</small>
-                        </div>
-                    </div>
-                </div>
-
-                {{-- Total Deposits --}}
-                <div class="col-md-4 mb-3">
-                    <h6 class="text-muted">Total Deposits</h6>
-                    <div class="d-flex justify-content-between">
-                        <div class="text-center">
-                            <small>You</small>
-                            <h4 class="text-success">Rp {{ number_format($comparison['overview']['user']['total_deposits'], 0, ',', '.') }}</h4>
-                        </div>
-                        <div class="text-center">
-                            <small>Partner</small>
-                            <h4 class="text-success">Rp {{ number_format($comparison['overview']['partner']['total_deposits'], 0, ',', '.') }}</h4>
+                            <h4 class="text-danger">Rp {{ number_format($comparison['overview']['partner']['total_withdrawals'], 0, ',', '.') }}</h4>
                         </div>
                     </div>
                 </div>
@@ -160,11 +139,9 @@
                                         </td>
                                         <td class="text-end">
                                             Rp {{ number_format($item['user']['amount'], 0, ',', '.') }}
-                                            <small class="text-muted">({{ $item['user']['count'] }})</small>
                                         </td>
                                         <td class="text-end">
                                             Rp {{ number_format($item['partner']['amount'], 0, ',', '.') }}
-                                            <small class="text-muted">({{ $item['partner']['count'] }})</small>
                                         </td>
                                         <td class="text-center">
                                             @if($item['leader'] === 'user')

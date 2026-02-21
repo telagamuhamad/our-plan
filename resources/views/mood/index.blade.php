@@ -160,7 +160,7 @@
                                     <td>{{ $mood->formatted_date }}</td>
                                     <td>{{ $mood->user->name }}</td>
                                     <td>
-                                        <span class="badge bg-light">
+                                        <span class="badge bg-primary bg-opacity-10 text-primary border border-primary">
                                             {{ $mood->mood_emoji }} {{ $mood->mood_label }}
                                         </span>
                                         @if($mood->is_updated)

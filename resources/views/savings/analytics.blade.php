@@ -15,10 +15,10 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2>📊 Savings Analytics</h2>
         <div class="btn-group">
-            <button type="button" class="btn btn-outline-primary period-btn" data-period="all">All Time</button>
-            <button type="button" class="btn btn-outline-primary period-btn" data-period="year">This Year</button>
-            <button type="button" class="btn btn-outline-primary period-btn" data-period="quarter">This Quarter</button>
-            <button type="button" class="btn btn-outline-primary period-btn active" data-period="month">This Month</button>
+            <button type="button" class="btn btn-outline-primary period-btn {{ $period === 'all' ? 'active' : '' }}" data-period="all">All Time</button>
+            <button type="button" class="btn btn-outline-primary period-btn {{ $period === 'year' ? 'active' : '' }}" data-period="year">This Year</button>
+            <button type="button" class="btn btn-outline-primary period-btn {{ $period === 'quarter' ? 'active' : '' }}" data-period="quarter">This Quarter</button>
+            <button type="button" class="btn btn-outline-primary period-btn {{ $period === 'month' || empty($period) ? 'active' : '' }}" data-period="month">This Month</button>
         </div>
     </div>
 
@@ -29,7 +29,7 @@
                 <div class="card-body">
                     <h6 class="card-title">Total Savings</h6>
                     <h3>Rp {{ number_format($analytics['overview']['total_savings'], 0, ',', '.') }}</h3>
-                    <small>{{ $analytics['overview']['overall_progress'] }} of target</small>
+                    <small>{{ $analytics['overview']['overall_progress'] }}% of target</small>
                 </div>
             </div>
         </div>
@@ -286,108 +286,135 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 // Growth Chart
-const growthData = @json($growth['data']);
-const growthCtx = document.getElementById('growthChart').getContext('2d');
-new Chart(growthCtx, {
-    type: 'line',
-    data: {
-        labels: growthData.map(d => d.date),
-        datasets: [{
-            label: 'Total Savings',
-            data: growthData.map(d => d.amount),
-            borderColor: 'rgb(75, 192, 192)',
-            backgroundColor: 'rgba(75, 192, 192, 0.1)',
-            tension: 0.1,
-            fill: true
-        }]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            legend: { display: false }
+@if(isset($growth) && isset($growth['data']) && count($growth['data']) > 0)
+try {
+    const growthData = {{ Illuminate\Support\Js::from($growth['data']) }};
+    const growthCtx = document.getElementById('growthChart').getContext('2d');
+    new Chart(growthCtx, {
+        type: 'line',
+        data: {
+            labels: growthData.map(d => d.date),
+            datasets: [{
+                label: 'Total Savings',
+                data: growthData.map(d => d.amount),
+                borderColor: 'rgb(75, 192, 192)',
+                backgroundColor: 'rgba(75, 192, 192, 0.1)',
+                tension: 0.1,
+                fill: true
+            }]
         },
-        scales: {
-            y: {
-                beginAtZero: true,
-                ticks: {
-                    callback: function(value) {
-                        return 'Rp ' + value.toLocaleString('id-ID');
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return 'Rp ' + value.toLocaleString('id-ID');
+                        }
                     }
                 }
             }
         }
-    }
-});
+    });
+} catch(e) {
+    console.error('Growth chart error:', e);
+    document.getElementById('growthChart').parentElement.innerHTML = '<p class="text-danger">Error loading growth chart.</p>';
+}
+@else
+document.getElementById('growthChart').parentElement.innerHTML = '<p class="text-muted text-center">No growth data available yet.</p>';
+@endif
 
 // Category Distribution Chart
-const categoryData = @json($categoryDistribution);
-const categoryCtx = document.getElementById('categoryChart').getContext('2d');
-new Chart(categoryCtx, {
-    type: 'doughnut',
-    data: {
-        labels: categoryData.map(c => c.category.name),
-        datasets: [{
-            data: categoryData.map(c => c.amount),
-            backgroundColor: categoryData.map(c => c.category.color),
-        }]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            legend: { position: 'bottom' },
-            tooltip: {
-                callbacks: {
-                    label: function(context) {
-                        const label = context.label || '';
-                        const value = context.raw || 0;
-                        const percentage = categoryData[context.dataIndex].percentage;
-                        return label + ': ' + percentage + '% (Rp ' + value.toLocaleString('id-ID') + ')';
+@if(isset($categoryDistribution) && count($categoryDistribution) > 0)
+try {
+    const categoryData = {{ Illuminate\Support\Js::from($categoryDistribution) }};
+    const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+    new Chart(categoryCtx, {
+        type: 'doughnut',
+        data: {
+            labels: categoryData.map(c => c.category.name),
+            datasets: [{
+                data: categoryData.map(c => c.amount),
+                backgroundColor: categoryData.map(c => c.category.color),
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom' },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const label = context.label || '';
+                            const value = context.raw || 0;
+                            const percentage = categoryData[context.dataIndex].percentage;
+                            return label + ': ' + percentage + '% (Rp ' + value.toLocaleString('id-ID') + ')';
+                        }
                     }
                 }
             }
         }
-    }
-});
+    });
+} catch(e) {
+    console.error('Category chart error:', e);
+    document.getElementById('categoryChart').parentElement.innerHTML = '<p class="text-danger">Error loading category chart.</p>';
+}
+@else
+document.getElementById('categoryChart').parentElement.innerHTML = '<p class="text-muted text-center">No category data available.</p>';
+@endif
 
 // Monthly Summary Chart
-const monthlyData = @json($analytics['monthly_summary']);
-const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
-new Chart(monthlyCtx, {
-    type: 'bar',
-    data: {
-        labels: monthlyData.map(m => m.month_formatted),
-        datasets: [
-            {
-                label: 'Deposits',
-                data: monthlyData.map(m => m.deposit_total),
-                backgroundColor: 'rgba(75, 192, 192, 0.7)',
-            },
-            {
-                label: 'Withdrawals',
-                data: monthlyData.map(m => m.withdrawal_total),
-                backgroundColor: 'rgba(255, 99, 132, 0.7)',
-            }
-        ]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-            x: { stacked: true },
-            y: {
-                stacked: true,
-                beginAtZero: true,
-                ticks: {
-                    callback: function(value) {
-                        return 'Rp ' + (value / 1000000).toFixed(1) + 'M';
+@if(isset($analytics['monthly_summary']) && count($analytics['monthly_summary']) > 0)
+try {
+    const monthlyData = {{ Illuminate\Support\Js::from($analytics['monthly_summary']) }};
+    const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
+    new Chart(monthlyCtx, {
+        type: 'bar',
+        data: {
+            labels: monthlyData.map(m => m.month_formatted),
+            datasets: [
+                {
+                    label: 'Deposits',
+                    data: monthlyData.map(m => m.deposit_total),
+                    backgroundColor: 'rgba(75, 192, 192, 0.7)',
+                },
+                {
+                    label: 'Withdrawals',
+                    data: monthlyData.map(m => m.withdrawal_total),
+                    backgroundColor: 'rgba(255, 99, 132, 0.7)',
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: { stacked: true },
+                y: {
+                    stacked: true,
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return 'Rp ' + (value / 1000000).toFixed(1) + 'M';
+                        }
                     }
                 }
             }
         }
-    }
-});
+    });
+} catch(e) {
+    console.error('Monthly chart error:', e);
+    document.getElementById('monthlyChart').parentElement.innerHTML = '<p class="text-danger">Error loading monthly chart.</p>';
+}
+@else
+document.getElementById('monthlyChart').parentElement.innerHTML = '<p class="text-muted">No monthly data available.</p>';
+@endif
 
 // Period filter functionality
 document.querySelectorAll('.period-btn').forEach(btn => {
@@ -396,12 +423,7 @@ document.querySelectorAll('.period-btn').forEach(btn => {
         this.classList.add('active');
 
         const period = this.dataset.period;
-        fetch(`{{ route('savings-analytics.index') }}?period=${period}`)
-            .then(response => response.text())
-            .then(html => {
-                document.documentElement.innerHTML = html;
-                history.pushState({}, '', `?period=${period}`);
-            });
+        window.location.href = '{{ route('savings-analytics.index') }}?period=' + period;
     });
 });
 </script>

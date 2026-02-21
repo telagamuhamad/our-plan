@@ -19,10 +19,17 @@
         <!-- Post Header -->
         <div class="d-flex justify-content-between align-items-start mb-3">
             <div class="d-flex align-items-center gap-2">
-                <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center"
-                     style="width: 40px; height: 40px; font-size: 18px;">
-                    {{ strtoupper(substr($post->author->name, 0, 1)) }}
-                </div>
+                @if($post->author->avatar_url)
+                    <img src="{{ $post->author->avatar_url }}"
+                         alt="{{ e($post->author->name) }}"
+                         class="rounded-circle"
+                         style="width: 40px; height: 40px; object-fit: cover;">
+                @else
+                    <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center"
+                         style="width: 40px; height: 40px; font-size: 18px;">
+                        {{ strtoupper(substr($post->author->name, 0, 1)) }}
+                    </div>
+                @endif
                 <div>
                     <h6 class="mb-0 fw-semibold">{{ e($post->author->name) }}</h6>
                     <small class="text-muted">{{ $post->time_ago }}</small>

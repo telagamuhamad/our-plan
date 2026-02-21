@@ -66,11 +66,15 @@
 
         /* Fix modal z-index issue */
         .modal {
-            z-index: 1060;
+            z-index: 1055 !important;
         }
 
         .modal-backdrop {
-            z-index: 1055;
+            z-index: 1050 !important;
+        }
+
+        .modal-dialog {
+            z-index: 1056 !important;
         }
 
         .navbar {
