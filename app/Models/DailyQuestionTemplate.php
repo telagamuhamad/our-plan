@@ -73,21 +73,39 @@ class DailyQuestionTemplate extends Model
 
     /**
      * Get or create template for a specific date.
+     * Will generate using AI if not exists.
      */
     public static function getOrCreateForDate(string $date): self
     {
         $template = static::getByDate($date);
 
         if (!$template) {
-            // Use fallback from static question bank
-            $random = DailyQuestion::getRandomQuestion();
-            $template = static::create([
-                'question_date' => $date,
-                'question' => $random['question'],
-                'category' => $random['category'],
-                'locale' => 'id',
-                'is_fallback' => true,
-            ]);
+            // Generate question using AI
+            $generator = app(\App\Services\QuestionGeneratorService::class);
+
+            if ($generator->isConfigured()) {
+                // AI is available, generate real-time
+                $result = $generator->generateDailyQuestion(null, 'id');
+                $template = static::create([
+                    'question_date' => $date,
+                    'question' => $result['question'],
+                    'category' => $result['category'],
+                    'locale' => $result['locale'],
+                    'ai_model' => $result['ai_model'],
+                    'ai_response' => $result['ai_response'],
+                    'is_fallback' => $result['is_fallback'],
+                ]);
+            } else {
+                // No AI configured, use fallback from static question bank
+                $random = DailyQuestion::getRandomQuestion();
+                $template = static::create([
+                    'question_date' => $date,
+                    'question' => $random['question'],
+                    'category' => $random['category'],
+                    'locale' => 'id',
+                    'is_fallback' => true,
+                ]);
+            }
         }
 
         return $template;

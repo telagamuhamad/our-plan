@@ -3,7 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\DailyQuestionTemplate;
-use App\Services\GeminiService;
+use App\Services\QuestionGeneratorService;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 
@@ -25,22 +25,26 @@ class GenerateDailyQuestion extends Command
      *
      * @var string
      */
-    protected $description = 'Generate daily question for couples using AI (Gemini)';
+    protected $description = 'Generate daily question for couples using AI';
 
     /**
      * Execute the console command.
      */
-    public function handle(GeminiService $gemini): int
+    public function handle(QuestionGeneratorService $generator): int
     {
         $days = (int) $this->option('days', 1);
         $specificDate = $this->option('date');
         $specificCategory = $this->option('category');
         $force = $this->option('force');
 
-        // Check if Gemini is configured
-        if (!$gemini->isConfigured()) {
-            $this->warn('Gemini API key is not configured. Using fallback static questions.');
-            $this->warn('Set GEMINI_API_KEY in your .env file to use AI-generated questions.');
+        // Check if generator is configured
+        if (!$generator->isConfigured()) {
+            $this->warn('AI API key is not configured. Using fallback static questions.');
+            $provider = $generator->getProvider();
+            $this->warn("Set {$provider}_API_KEY in your .env file to use AI-generated questions.");
+        } else {
+            $this->info("Using provider: <info>{$generator->getProvider()}</info> with model: <comment>{$generator->getModel()}</comment>");
+            $this->newLine();
         }
 
         $generated = 0;
@@ -82,7 +86,7 @@ class GenerateDailyQuestion extends Command
             try {
                 // Generate question
                 $category = $specificCategory ?: null;
-                $result = $gemini->generateDailyQuestion($category, 'id');
+                $result = $generator->generateDailyQuestion($category, 'id');
 
                 // Save to database
                 DailyQuestionTemplate::create([

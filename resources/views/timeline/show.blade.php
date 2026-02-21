@@ -54,3 +54,114 @@
         </form>
     </div>
 </div>
+@endsection
+
+@push('scripts')
+<style>
+    .post-card {
+        border: 1px solid #e9ecef;
+    }
+
+    .reaction-summary .badge {
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .reaction-summary .badge:hover {
+        background-color: #e9ecef !important;
+    }
+
+    .comments-section {
+        border-top: 1px solid #e9ecef;
+        padding-top: 1rem;
+    }
+
+    .comment-item .btn-link:hover {
+        text-decoration: none;
+    }
+
+    .react-btn {
+        border: none;
+        background: none;
+        transition: transform 0.2s;
+    }
+
+    .react-btn:hover {
+        transform: scale(1.2);
+    }
+
+    /* Fix emoji dropdown positioning */
+    .dropdown.position-static {
+        position: static;
+    }
+
+    .reaction-dropdown {
+        position: absolute !important;
+        left: 0 !important;
+        margin-top: 0.5rem !important;
+    }
+
+    .post-detail {
+        max-width: 100%;
+    }
+
+    .comments-list {
+        border-top: 1px solid #e9ecef;
+        padding-top: 1rem;
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Comment toggle
+    document.querySelectorAll('.comment-toggle-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const postId = this.dataset.postId;
+            const commentsSection = document.getElementById('comments-' + postId);
+
+            commentsSection.classList.toggle('d-none');
+            this.classList.toggle('btn-outline-secondary');
+            this.classList.toggle('btn-secondary');
+        });
+    });
+
+    // React buttons
+    document.querySelectorAll('.react-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const postId = this.dataset.postId;
+            const emoji = this.dataset.emoji;
+            const postCard = this.closest('.post-card');
+            const reactBtn = postCard.querySelector('[data-bs-toggle="dropdown"]');
+
+            // Send AJAX request
+            fetch(`/timeline/react/${postId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ emoji: emoji })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    });
+
+    // Comment form submission
+    document.querySelectorAll('form[action*="comment"]').forEach(form => {
+        form.addEventListener('submit', function() {
+            const btn = this.querySelector('button[type="submit"]');
+            const originalText = btn.textContent;
+            btn.textContent = 'Mengirim...';
+            btn.disabled = true;
+        });
+    });
+});
+</script>
+@endpush

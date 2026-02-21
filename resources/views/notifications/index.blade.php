@@ -66,43 +66,54 @@
                     <div class="flex-grow-1">
                         @if($notification->link)
                             <a href="{{ $notification->link }}?notification_id={{ $notification->id }}"
-                               class="text-decoration-none notification-link">
-                                <div class="d-flex justify-content-between">
-                                    <p class="mb-1 {{ !$notification->is_read ? 'fw-semibold' : '' }}">
-                                        {{ $notification->message }}
-                                    </p>
+                               class="text-decoration-none notification-link d-block">
+                                <p class="mb-1 {{ !$notification->is_read ? 'fw-semibold' : '' }}">
+                                    {{ $notification->message }}
                                     @if(!$notification->is_read)
-                                        <span class="badge bg-primary rounded-pill">Baru</span>
+                                        <span class="badge bg-primary rounded-pill ms-1 align-middle">Baru</span>
                                     @endif
-                                </div>
+                                </p>
                                 <small class="text-muted">
                                     {{ $notification->created_at->diffForHumans() }}
                                 </small>
                             </a>
                         @else
-                            <div class="d-flex justify-content-between">
-                                <p class="mb-1 {{ !$notification->is_read ? 'fw-semibold' : '' }}">
-                                    {{ $notification->message }}
-                                </p>
+                            <p class="mb-1 {{ !$notification->is_read ? 'fw-semibold' : '' }}">
+                                {{ $notification->message }}
                                 @if(!$notification->is_read)
-                                    <span class="badge bg-primary rounded-pill">Baru</span>
+                                    <span class="badge bg-primary rounded-pill ms-1 align-middle">Baru</span>
                                 @endif
-                            </div>
+                            </p>
                             <small class="text-muted">
                                 {{ $notification->created_at->diffForHumans() }}
                             </small>
                         @endif
                     </div>
 
-                    <!-- Delete button -->
-                    <form action="{{ route('notifications.destroy', $notification->id) }}" method="POST" class="flex-shrink-0">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="btn btn-sm btn-link text-muted p-0"
-                                onclick="return confirm('Hapus notifikasi ini?');">
-                            ✕
-                        </button>
-                    </form>
+                    <!-- Action buttons -->
+                    <div class="flex-shrink-0 d-flex align-items-center">
+                        @if(!$notification->is_read)
+                            <button type="button"
+                                    class="btn btn-link text-primary p-0 mark-read-btn d-flex align-items-center"
+                                    data-notification-id="{{ $notification->id }}"
+                                    title="Tandai sebagai dibaca">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z"/>
+                                </svg>
+                            </button>
+                        @endif
+                        <form action="{{ route('notifications.destroy', $notification->id) }}" method="POST" class="d-inline ms-2">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="btn btn-link text-muted p-0 d-flex align-items-center"
+                                    onclick="return confirm('Hapus notifikasi ini?');"
+                                    title="Hapus notifikasi">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
+                                </svg>
+                            </button>
+                        </form>
+                    </div>
                 </div>
             @endforeach
         </div>
@@ -121,4 +132,71 @@
         </div>
     @endif
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle mark as read button
+    document.querySelectorAll('.mark-read-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const notificationId = this.dataset.notificationId;
+            const notificationItem = this.closest('.list-group-item');
+            const badge = notificationItem.querySelector('.badge');
+            const messageText = notificationItem.querySelector('.mb-1');
+
+            fetch(`/notifications/mark-read/${notificationId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({})
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Remove the mark as read button
+                    this.remove();
+
+                    // Remove the "Baru" badge
+                    if (badge) {
+                        badge.remove();
+                    }
+
+                    // Remove bold styling from message
+                    if (messageText) {
+                        messageText.classList.remove('fw-semibold');
+                    }
+
+                    // Remove light background
+                    notificationItem.classList.remove('bg-light');
+
+                    // Update unread count in navbar if exists
+                    const unreadCountBadge = document.querySelector('.navbar .badge');
+                    if (unreadCountBadge) {
+                        const currentCount = parseInt(unreadCountBadge.textContent);
+                        if (currentCount > 1) {
+                            unreadCountBadge.textContent = currentCount - 1;
+                        } else {
+                            unreadCountBadge.closest('.position-absolute')?.remove();
+                            if (!unreadCountBadge.closest('.position-absolute')) {
+                                unreadCountBadge.remove();
+                            }
+                        }
+                    }
+
+                    // Hide "Mark all as read" button if no more unread notifications
+                    const markAllButton = document.querySelector('form[action*="mark-all-read"]');
+                    if (markAllButton && !document.querySelector('.mark-read-btn')) {
+                        markAllButton.remove();
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Terjadi kesalahan. Silakan coba lagi.');
+            });
+        });
+    });
+});
+</script>
 @endsection
