@@ -7,9 +7,13 @@ use App\Http\Controllers\Api\GoalController;
 use App\Http\Controllers\Api\MeetingApiController;
 use App\Http\Controllers\Api\MeetingFeedbackApiController;
 use App\Http\Controllers\Api\MissingYouController;
+use App\Http\Controllers\Api\NotificationApiController;
+use App\Http\Controllers\Api\ProfileApiController;
 use App\Http\Controllers\Api\QuestionController;
 use App\Http\Controllers\Api\SavingApiController;
 use App\Http\Controllers\Api\SavingTransactionApiController;
+use App\Http\Controllers\Api\TravelJournalApiController;
+use App\Http\Controllers\Api\TravelPhotoApiController;
 use App\Http\Controllers\SavingCategoryController;
 use App\Http\Controllers\RecurringSavingController;
 use App\Http\Controllers\SavingsAnalyticsController;
@@ -44,6 +48,15 @@ Route::middleware('auth:sanctum')->group(function () {
         return new UserResource($request->user());
     });
 
+    // Profile Management
+    Route::prefix('profile')->group(function () {
+        Route::get('/', [ProfileApiController::class, 'show'])->name('profile.show');
+        Route::put('/', [ProfileApiController::class, 'update'])->name('profile.update');
+        Route::put('/password', [ProfileApiController::class, 'updatePassword'])->name('profile.password');
+        Route::post('/avatar', [ProfileApiController::class, 'updateAvatar'])->name('profile.avatar');
+        Route::post('/avatar/remove', [ProfileApiController::class, 'removeAvatar'])->name('profile.avatar.remove');
+    });
+
     // Pairing Routes
     Route::prefix('pairing')->group(function () {
         Route::post('/create-invite', [CoupleApiController::class, 'createInviteCode'])
@@ -67,6 +80,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::prefix('meetings')->group(function () {
             Route::get('index', [MeetingApiController::class, 'index'])->name('meetings.index');
             Route::get('countdown', [MeetingApiController::class, 'countdown'])->name('meetings.countdown');
+            Route::get('analytics', [MeetingApiController::class, 'analytics'])->name('meetings.analytics');
             Route::get('show/{meetingId}', [MeetingApiController::class, 'show'])->name('meetings.show');
             Route::post('store', [MeetingApiController::class, 'store'])->name('meetings.store');
             Route::put('update/{meetingId}', [MeetingApiController::class, 'update'])->name('meetings.update');
@@ -83,6 +97,7 @@ Route::middleware('auth:sanctum')->group(function () {
         // Travels
         Route::prefix('travels')->group(function () {
             Route::get('index', [TravelApiController::class, 'index'])->name('travels.index');
+            Route::get('analytics', [TravelApiController::class, 'analytics'])->name('travels.analytics');
             Route::get('show/{travelId}', [TravelApiController::class, 'show'])->name('travels.show');
             Route::post('store', [TravelApiController::class, 'store'])->name('travels.store');
             Route::put('update/{travelId}', [TravelApiController::class, 'update'])->name('travels.update');
@@ -94,6 +109,27 @@ Route::middleware('auth:sanctum')->group(function () {
             // Additional apis
             Route::get('get-unassigned-travels', [TravelApiController::class, 'getUnassignedTravels'])->name('travels.get-unassigned-travels');
             Route::put('update-visit-date/{travelId}', [TravelApiController::class, 'updateVisitDate'])->name('travels.update-visit-date');
+
+            // Travel Photos
+            Route::get('{travelId}/photos', [TravelPhotoApiController::class, 'index'])->name('travels.photos.index');
+            Route::post('{travelId}/photos', [TravelPhotoApiController::class, 'store'])->name('travels.photos.store');
+            Route::post('{travelId}/photos/multiple', [TravelPhotoApiController::class, 'storeMultiple'])->name('travels.photos.store-multiple');
+            Route::put('photos/{photoId}', [TravelPhotoApiController::class, 'update'])->name('travels.photos.update');
+            Route::delete('photos/{photoId}', [TravelPhotoApiController::class, 'destroy'])->name('travels.photos.destroy');
+            Route::post('photos/order', [TravelPhotoApiController::class, 'updateOrder'])->name('travels.photos.order');
+
+            // Travel Journals
+            Route::get('{travelId}/journals', [TravelJournalApiController::class, 'byTravel'])->name('travels.journals.index');
+        });
+
+        // Travel Journals (separate section)
+        Route::prefix('journals')->group(function () {
+            Route::get('/', [TravelJournalApiController::class, 'index'])->name('journals.index');
+            Route::post('/', [TravelJournalApiController::class, 'store'])->name('journals.store');
+            Route::get('/{journalId}', [TravelJournalApiController::class, 'show'])->name('journals.show');
+            Route::put('/{journalId}', [TravelJournalApiController::class, 'update'])->name('journals.update');
+            Route::delete('/{journalId}', [TravelJournalApiController::class, 'destroy'])->name('journals.destroy');
+            Route::post('/{journalId}/favorite', [TravelJournalApiController::class, 'toggleFavorite'])->name('journals.favorite');
         });
 
         // Savings
@@ -207,6 +243,8 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::get('/{id}', [GoalController::class, 'show'])->name('goals.show');
             Route::put('/{id}', [GoalController::class, 'update'])->name('goals.update');
             Route::delete('/{id}', [GoalController::class, 'destroy'])->name('goals.destroy');
+            Route::post('/{id}/mark-completed', [GoalController::class, 'markCompleted'])->name('goals.mark-completed');
+            Route::post('/{id}/mark-in-progress', [GoalController::class, 'markInProgress'])->name('goals.mark-in-progress');
         });
 
         // Tasks
@@ -220,6 +258,15 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::put('/{id}', [TaskController::class, 'update'])->name('tasks.update');
             Route::post('/toggle/{id}', [TaskController::class, 'toggle'])->name('tasks.toggle');
             Route::delete('/{id}', [TaskController::class, 'destroy'])->name('tasks.destroy');
+        });
+
+        // Notifications
+        Route::prefix('notifications')->group(function () {
+            Route::get('/', [NotificationApiController::class, 'index'])->name('notifications.index');
+            Route::get('/unread-count', [NotificationApiController::class, 'unreadCount'])->name('notifications.unread-count');
+            Route::post('/{id}/mark-read', [NotificationApiController::class, 'markAsRead'])->name('notifications.mark-read');
+            Route::post('/mark-all-read', [NotificationApiController::class, 'markAllAsRead'])->name('notifications.mark-all-read');
+            Route::delete('/{id}', [NotificationApiController::class, 'destroy'])->name('notifications.destroy');
         });
     });
 });

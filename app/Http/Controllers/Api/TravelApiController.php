@@ -11,6 +11,7 @@ use App\Mail\TravelUnassignedMail;
 use App\Services\Api\MeetingService;
 use App\Services\Api\TravelService;
 use App\Services\Api\UserService;
+use App\Services\TravelService as WebTravelService;
 use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -21,12 +22,14 @@ class TravelApiController extends Controller
     protected $service;
     protected $meetingService;
     protected $userService;
+    protected $webTravelService;
 
-    public function __construct(TravelService $service, MeetingService $meetingService, UserService $userService)
+    public function __construct(TravelService $service, MeetingService $meetingService, UserService $userService, WebTravelService $webTravelService)
     {
         $this->service = $service;
         $this->meetingService = $meetingService;
         $this->userService = $userService;
+        $this->webTravelService = $webTravelService;
     }
 
     public function index(Request $request) 
@@ -310,6 +313,26 @@ class TravelApiController extends Controller
                 'file' => $e->getFile(),
                 'line' => $e->getLine()
             ], 400);
+        }
+    }
+
+    /**
+     * Get travel analytics data
+     */
+    public function analytics()
+    {
+        try {
+            $analytics = $this->webTravelService->getAnalytics();
+
+            return response()->json([
+                'success' => true,
+                'data' => $analytics
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 500);
         }
     }
 }

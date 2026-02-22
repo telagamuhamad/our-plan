@@ -252,4 +252,76 @@ class GoalController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Mark goal as completed.
+     */
+    public function markCompleted(string $id): JsonResponse
+    {
+        $user = auth()->user();
+
+        if (!$user->couple) {
+            return response()->json([
+                'message' => 'Anda belum terhubung dengan pasangan.',
+            ], 403);
+        }
+
+        try {
+            $goal = $this->goalService->getGoal($id, $user->couple->id);
+
+            if (!$goal) {
+                return response()->json([
+                    'message' => 'Goal tidak ditemukan.',
+                ], 404);
+            }
+
+            $goal = $this->goalService->updateGoal($id, ['status' => 'completed']);
+
+            return response()->json([
+                'message' => 'Goal berhasil ditandai sebagai selesai.',
+                'data' => new GoalResource($goal->load('tasks')),
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Gagal menandai goal sebagai selesai.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Mark goal as in progress.
+     */
+    public function markInProgress(string $id): JsonResponse
+    {
+        $user = auth()->user();
+
+        if (!$user->couple) {
+            return response()->json([
+                'message' => 'Anda belum terhubung dengan pasangan.',
+            ], 403);
+        }
+
+        try {
+            $goal = $this->goalService->getGoal($id, $user->couple->id);
+
+            if (!$goal) {
+                return response()->json([
+                    'message' => 'Goal tidak ditemukan.',
+                ], 404);
+            }
+
+            $goal = $this->goalService->updateGoal($id, ['status' => 'in_progress']);
+
+            return response()->json([
+                'message' => 'Goal berhasil ditandai sebagai sedang berjalan.',
+                'data' => new GoalResource($goal->load('tasks')),
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Gagal menandai goal sebagai sedang berjalan.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
 }
