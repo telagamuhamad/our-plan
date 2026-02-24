@@ -36,6 +36,16 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+// Health Check
+Route::get('/health', function () {
+    return response()->json([
+        'status' => 'ok',
+        'message' => 'API is running',
+        'timestamp' => now()->toIso8601String(),
+        'version' => app()->version(),
+    ]);
+})->name('health');
+
 // Public routes
 Route::post('/register', [AuthApiController::class, 'register'])->name('register');
 Route::post('/login', [AuthApiController::class, 'login'])->name('login');
