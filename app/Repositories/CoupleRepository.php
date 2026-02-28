@@ -49,18 +49,9 @@ class CoupleRepository
      */
     public function findByUserId(int $userId): ?Couple
     {
-        return $this->model->where(function ($query) use ($userId) {
-            $query->where('user_one_id', $userId)
-                ->orWhere('user_two_id', $userId);
-        })->first();
-    }
-
-    /**
-     * Find a couple by user.
-     */
-    public function findByUser(User $user): ?Couple
-    {
-        return $this->findByUserId($user->id);
+        return $this->model->where('user_one_id', $userId)
+            ->orWhere('user_two_id', $userId)
+            ->first();
     }
 
     /**
@@ -142,10 +133,8 @@ class CoupleRepository
      */
     public function findByUserWithUsers(User $user): ?Couple
     {
-        return $this->model->where(function ($query) use ($user) {
-            $query->where('user_one_id', $user->id)
-                ->orWhere('user_two_id', $user->id);
-        })
+        return $this->model->where('user_one_id', $user->id)
+            ->orWhere('user_two_id', $user->id)
             ->with(['userOne', 'userTwo'])
             ->first();
     }
