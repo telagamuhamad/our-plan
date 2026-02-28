@@ -61,7 +61,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Profile Management
     Route::prefix('profile')->group(function () {
         Route::get('/', [ProfileApiController::class, 'show'])->name('profile.show');
-        Route::put('/', [ProfileApiController::class, 'update'])->name('profile.update');
+        Route::put('/', [ProfileApiController::class, 'update']);
         Route::put('/password', [ProfileApiController::class, 'updatePassword'])->name('profile.password');
         Route::post('/avatar', [ProfileApiController::class, 'updateAvatar'])->name('profile.avatar');
         Route::post('/avatar/remove', [ProfileApiController::class, 'removeAvatar'])->name('profile.avatar.remove');
