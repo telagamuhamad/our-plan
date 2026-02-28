@@ -41,7 +41,13 @@ class CoupleRepository
      */
     public function findByInviteCode(string $code): ?Couple
     {
-        return $this->model->where('invite_code', $code)->first();
+        \Log::info('findByInviteCode called with: "' . $code . '"');
+
+        $result = $this->model->where('invite_code', $code)->first();
+
+        \Log::info('findByInviteCode result: ' . ($result ? 'FOUND - ID: ' . $result->id : 'NOT FOUND'));
+
+        return $result;
     }
 
     /**
