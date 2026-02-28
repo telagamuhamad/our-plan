@@ -151,10 +151,10 @@ class PairingService
      */
     protected function hasUserConfirmed(Couple $couple, User $user): bool
     {
-        if ($couple->user_one_id === $user->id) {
+        if ((int)$couple->user_one_id === (int)$user->id) {
             return $couple->hasUserOneConfirmed();
         }
-        if ($couple->user_two_id === $user->id) {
+        if ((int)$couple->user_two_id === (int)$user->id) {
             return $couple->hasUserTwoConfirmed();
         }
         return false;

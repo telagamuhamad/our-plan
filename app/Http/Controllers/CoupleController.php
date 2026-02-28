@@ -97,25 +97,12 @@ class CoupleController extends Controller
     {
         $user = Auth::user();
 
-        // Debug logging
-        \Log::info('=== showStatus DEBUG ===');
-        \Log::info('User ID: ' . $user->id);
-        \Log::info('User couple_id: ' . ($user->couple_id ?? 'NULL'));
-        \Log::info('Session ID: ' . session()->getId());
-
         // If user has active couple, redirect to dashboard
         if ($user->hasActiveCouple()) {
             return redirect()->route('dashboard');
         }
 
         $coupleInfo = $this->pairingService->getCoupleInfo($user);
-
-        \Log::info('coupleInfo result: ' . ($coupleInfo ? 'FOUND' : 'NULL'));
-        if ($coupleInfo) {
-            \Log::info('coupleInfo data: ' . json_encode($coupleInfo));
-        }
-
-        \Log::info('=== END DEBUG ===');
 
         return view('pairing.status', [
             'user' => $user,

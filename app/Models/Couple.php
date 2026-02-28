@@ -136,10 +136,10 @@ class Couple extends Model
      */
     public function getPartner(User $user): ?User
     {
-        if ($this->user_one_id === $user->id) {
+        if ((int)$this->user_one_id === (int)$user->id) {
             return $this->userTwo;
         }
-        if ($this->user_two_id === $user->id) {
+        if ((int)$this->user_two_id === (int)$user->id) {
             return $this->userOne;
         }
         return null;
@@ -161,7 +161,7 @@ class Couple extends Model
      */
     public function isUserOne(User $user): bool
     {
-        return $this->user_one_id === $user->id;
+        return (int)$this->user_one_id === (int)$user->id;
     }
 
     /**
@@ -169,7 +169,7 @@ class Couple extends Model
      */
     public function isUserTwo(User $user): bool
     {
-        return $this->user_two_id === $user->id;
+        return (int)$this->user_two_id === (int)$user->id;
     }
 
     /**
@@ -177,7 +177,7 @@ class Couple extends Model
      */
     public function hasUser(User $user): bool
     {
-        return $this->user_one_id === $user->id || $this->user_two_id === $user->id;
+        return (int)$this->user_one_id === (int)$user->id || (int)$this->user_two_id === (int)$user->id;
     }
 
     /**

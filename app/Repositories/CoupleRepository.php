@@ -66,7 +66,7 @@ class CoupleRepository
         }
 
         // Prevent user from joining their own invite
-        if ($couple->user_one_id === $userId) {
+        if ((int)$couple->user_one_id === (int)$userId) {
             return null;
         }
 
@@ -87,9 +87,9 @@ class CoupleRepository
         }
 
         $updateData = [];
-        if ($couple->user_one_id === $userId && !$couple->user_one_confirmed_at) {
+        if ((int)$couple->user_one_id === (int)$userId && !$couple->user_one_confirmed_at) {
             $updateData['user_one_confirmed_at'] = now();
-        } elseif ($couple->user_two_id === $userId && !$couple->user_two_confirmed_at) {
+        } elseif ((int)$couple->user_two_id === (int)$userId && !$couple->user_two_confirmed_at) {
             $updateData['user_two_confirmed_at'] = now();
         }
 
