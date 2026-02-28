@@ -14,12 +14,12 @@ class SavingRepository{
 
     public function getAllSavings()
     {
-        return $this->model->get();
+        return $this->model->with('category')->get();
     }
 
     public function find($id)
     {
-        return $this->model->find($id);
+        return $this->model->with('category')->find($id);
     }
 
     public function create(array $payload)

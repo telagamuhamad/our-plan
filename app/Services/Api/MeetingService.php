@@ -55,4 +55,12 @@ class MeetingService {
 
         return $this->repository->deleteMeeting($meeting);
     }
+
+    /**
+     * Get countdown data for the next meeting
+     */
+    public function getCountdown()
+    {
+        return $this->repository->getCountdown();
+    }
 }

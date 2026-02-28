@@ -159,9 +159,9 @@ class TravelController extends Controller
 
             // send assignation mail
             $allUsers = $this->userService->getAllUser();
-            foreach ($allUsers as $user) {
-                Mail::to($user->email)->send(new TravelAssignedMail($updatedTravel, $meeting, $user->name));
-            }
+            // foreach ($allUsers as $user) {
+            //     Mail::to($user->email)->send(new TravelAssignedMail($updatedTravel, $meeting, $user->name));
+            // }
 
             return redirect()->back()->with('success', 'Travel Planner berhasil di-assign ke Meeting.');
             
@@ -186,9 +186,9 @@ class TravelController extends Controller
 
             // send cancellation mail
             $allUsers = $this->userService->getAllUser();
-            foreach ($allUsers as $user) {
-                Mail::to($user->email)->send(new TravelUnassignedMail($travel, $meeting, $user->name));
-            }
+            // foreach ($allUsers as $user) {
+            //     Mail::to($user->email)->send(new TravelUnassignedMail($travel, $meeting, $user->name));
+            // }
 
             return redirect()->back()->with('success', 'Travel Planner berhasil dihapus dari Meeting.');
         } catch (Exception $e) {
@@ -212,9 +212,9 @@ class TravelController extends Controller
 
             // send completion mail
             $allUsers = $this->userService->getAllUser();
-            foreach ($allUsers as $user) {
-                Mail::to($user->email)->send(new TravelCompletedMail($travel, $meeting, $user->name));
-            }
+            // foreach ($allUsers as $user) {
+            //     Mail::to($user->email)->send(new TravelCompletedMail($travel, $meeting, $user->name));
+            // }
 
             return redirect()->back()->with('success', 'Travel Planner berhasil diselesaikan.');
         } catch (Exception $e) {

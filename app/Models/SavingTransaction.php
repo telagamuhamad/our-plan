@@ -22,7 +22,7 @@ class SavingTransaction extends Model
 
     public function savingData()
     {
-        return $this->belongsTo(Saving::class);
+        return $this->belongsTo(Saving::class, 'saving_id');
     }
 
     public function user()

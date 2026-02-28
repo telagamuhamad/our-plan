@@ -31,4 +31,15 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    'gemini' => [
+        'api_key' => env('GEMINI_API_KEY'),
+        'model' => env('GEMINI_MODEL', 'gemini-2.0-flash'),
+    ],
+
+    'question_generator' => [
+        'provider' => env('QUESTION_GENERATOR_PROVIDER', 'groq'), // zai, groq, gemini, openai
+        'model' => env('QUESTION_GENERATOR_MODEL'),
+        'groq_api_key' => env('GROQ_API_KEY')
+    ],
+
 ];

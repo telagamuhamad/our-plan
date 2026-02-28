@@ -10,6 +10,7 @@ use App\Mail\MeetingUpdatedMail;
 use App\Services\Api\MeetingService;
 use App\Services\Api\TravelService;
 use App\Services\Api\UserService;
+use App\Services\MeetingService as WebMeetingService;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -21,12 +22,14 @@ class MeetingApiController extends Controller
     protected $service;
     protected $travelService;
     protected $userService;
+    protected $webMeetingService;
 
-    public function __construct(MeetingService $service, TravelService $travelService, UserService $userService)
+    public function __construct(MeetingService $service, TravelService $travelService, UserService $userService, WebMeetingService $webMeetingService)
     {
         $this->service = $service;
         $this->travelService = $travelService;
         $this->userService = $userService;
+        $this->webMeetingService = $webMeetingService;
     }
 
     public function index(Request $request)
@@ -39,7 +42,7 @@ class MeetingApiController extends Controller
         ];
 
         $meetings = $this->service->getAllMeetings($searchTerms);
-        
+
         // Loop meeting->travels to check travel visit date
         foreach ($meetings as $meeting) {
             if (!empty($meeting->travels)) {
@@ -59,6 +62,19 @@ class MeetingApiController extends Controller
         return response()->json([
             'meetings' => $meetings,
             'user' => $user
+        ], 200);
+    }
+
+    /**
+     * Get countdown for the next upcoming meeting
+     */
+    public function countdown()
+    {
+        $countdownData = $this->service->getCountdown();
+
+        return response()->json([
+            'success' => true,
+            'data' => $countdownData
         ], 200);
     }
 
@@ -99,9 +115,9 @@ class MeetingApiController extends Controller
 
             // Send mail
             $allUsers = $this->userService->getAllUser();
-            foreach ($allUsers as $user) {
-                Mail::to($user->email)->send(new MeetingConfirmationMail($meeting, $user->name));
-            }
+            // foreach ($allUsers as $user) {
+            //     Mail::to($user->email)->send(new MeetingConfirmationMail($meeting, $user->name));
+            // }
     
             return response()->json([
                 'success' => true,
@@ -141,9 +157,9 @@ class MeetingApiController extends Controller
             DB::commit();
 
             $allUsers = $this->userService->getAllUser();
-            foreach ($allUsers as $user) {
-                Mail::to($user->email)->send(new MeetingUpdatedMail($meeting, $user->name));
-            }
+            // foreach ($allUsers as $user) {
+            //     Mail::to($user->email)->send(new MeetingUpdatedMail($meeting, $user->name));
+            // }
 
             return response()->json([
                 'success' => true,
@@ -173,9 +189,9 @@ class MeetingApiController extends Controller
             DB::commit();
 
             $allUsers = $this->userService->getAllUser();
-            foreach ($allUsers as $user) {
-                Mail::to($user->email)->send(new MeetingCancellationMail($meeting, $user->name));
-            }
+            // foreach ($allUsers as $user) {
+            //     Mail::to($user->email)->send(new MeetingCancellationMail($meeting, $user->name));
+            // }
             
             return response()->json([
                 'success' => true,
@@ -189,6 +205,26 @@ class MeetingApiController extends Controller
                 'message' => 'Failed to delete meeting.',
                 'error' => $e->getMessage()
             ]);
+        }
+    }
+
+    /**
+     * Get meeting analytics data
+     */
+    public function analytics()
+    {
+        try {
+            $analytics = $this->webMeetingService->getAnalytics();
+
+            return response()->json([
+                'success' => true,
+                'data' => $analytics
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 500);
         }
     }
 }

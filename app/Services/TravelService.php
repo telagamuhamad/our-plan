@@ -71,4 +71,12 @@ class TravelService {
 
         return true;
     }
+
+    /**
+     * Get travel analytics
+     */
+    public function getAnalytics()
+    {
+        return $this->repository->getAnalytics();
+    }
 }

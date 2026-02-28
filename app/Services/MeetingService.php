@@ -38,7 +38,7 @@ class MeetingService {
     {
         $meeting = $this->repository->findMeetingById($meetingId);
 
-        $formattedUserId = (string) Auth::id();
+        $formattedUserId = Auth::id();
         if ($meeting->travelling_user_id !== $formattedUserId) {
             throw new Exception('You are not authorized to update this meeting.');
         }
@@ -55,5 +55,21 @@ class MeetingService {
         }
 
         return $this->repository->deleteMeeting($meeting);
+    }
+
+    /**
+     * Get countdown data for the next meeting
+     */
+    public function getCountdown()
+    {
+        return $this->repository->getCountdown();
+    }
+
+    /**
+     * Get meeting analytics
+     */
+    public function getAnalytics()
+    {
+        return $this->repository->getAnalytics();
     }
 }

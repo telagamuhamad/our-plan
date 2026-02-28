@@ -4,11 +4,15 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\SavingRequest;
 use App\Mail\SavingTransferMail;
+use App\Models\Saving;
 use App\Services\SavingService;
+use App\Services\SavingCategoryService;
 use App\Services\SavingTransactionService;
+use App\Services\RecurringSavingService;
 use App\Services\UserService;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 
@@ -17,12 +21,21 @@ class SavingController extends Controller
     protected $service;
     protected $userService;
     protected $savingTransactionService;
+    protected $categoryService;
+    protected $recurringSavingService;
 
-    public function __construct(SavingService $service, UserService $userService, SavingTransactionService $savingTransactionService)
-    {
+    public function __construct(
+        SavingService $service,
+        UserService $userService,
+        SavingTransactionService $savingTransactionService,
+        SavingCategoryService $categoryService,
+        RecurringSavingService $recurringSavingService
+    ) {
         $this->service = $service;
         $this->userService = $userService;
         $this->savingTransactionService = $savingTransactionService;
+        $this->categoryService = $categoryService;
+        $this->recurringSavingService = $recurringSavingService;
     }
 
     public function index()
@@ -30,29 +43,34 @@ class SavingController extends Controller
         $selectedCategory = request('category');
         $savings = $this->service->getAllSavings();
 
-        // Hitung total simpanan per kategori
-        $categoryData = $savings->groupBy('name')->map(function ($group) {
-            return $group->sum('current_amount');
-        });
-
         // Filter berdasarkan kategori jika ada
         if ($selectedCategory) {
-            $savings = $savings->where('name', $selectedCategory);
+            $savings = $savings->where('category_id', $selectedCategory);
         }
 
+        // Get all categories for filter
+        $allCategories = $this->categoryService->getAllCategories();
+
         // Hitung total simpanan per kategori
-        $categoryData = $savings->groupBy('name')->map(function ($group) {
-            return $group->sum('current_amount');
+        $categoryData = $savings->filter(function ($saving) {
+            return $saving->category_id;
+        })->groupBy('category_id')->mapWithKeys(function ($group, $categoryId) use ($allCategories) {
+            $category = $allCategories->firstWhere('id', $categoryId);
+            $name = $category ? $category->name : 'Uncategorized';
+            return [$name => $group->sum('current_amount')];
         });
 
-        // Ambil daftar semua kategori yang tersedia
-        $categories = $this->service->getAllSavings()->pluck('name')->unique();
+        // Get upcoming deadlines and overdue savings
+        $upcomingDeadlines = $this->service->getUpcomingDeadlines(7);
+        $overdueSavings = $this->service->getOverdueSavings();
 
         return view('savings.index', [
             'savings' => $savings,
             'categoryData' => $categoryData,
-            'categories' => $categories,
-            'selectedCategory' => $selectedCategory
+            'categories' => $allCategories,
+            'selectedCategory' => $selectedCategory,
+            'upcomingDeadlines' => $upcomingDeadlines,
+            'overdueSavings' => $overdueSavings,
         ]);
     }
 
@@ -64,15 +82,18 @@ class SavingController extends Controller
         }
 
         $savingTransactions = $this->savingTransactionService->getTransactionsBySavingId($saving->id);
+        $recurringSavings = $this->recurringSavingService->getBySavingId($id);
         return view('savings.show', [
             'saving' => $saving,
-            'savingTransactions' => $savingTransactions
+            'savingTransactions' => $savingTransactions,
+            'recurringSavings' => $recurringSavings
         ]);
     }
 
     public function create()
     {
-        return view('savings.create');
+        $categories = $this->categoryService->getAllCategories();
+        return view('savings.create', compact('categories'));
     }
 
     public function store(SavingRequest $request)
@@ -81,8 +102,10 @@ class SavingController extends Controller
             DB::beginTransaction();
 
             $payload = [
+                'category_id' => $request->category_id ?: null,
                 'name' => $request->name,
                 'target_amount' => $request->target_amount,
+                'target_date' => $request->target_date,
                 'is_shared' => $request->has('is_shared'),
             ];
 
@@ -105,8 +128,10 @@ class SavingController extends Controller
             return back()->with('error', 'Saving not found.');
         }
 
+        $categories = $this->categoryService->getAllCategories();
         return view('savings.edit', [
-            'saving' => $saving
+            'saving' => $saving,
+            'categories' => $categories
         ]);
     }
 
@@ -116,8 +141,10 @@ class SavingController extends Controller
             DB::beginTransaction();
 
             $payload = [
+                'category_id' => $request->category_id ?: null,
                 'name' => $request->name,
                 'target_amount' => $request->target_amount,
+                'target_date' => $request->target_date,
                 'is_shared' => $request->has('is_shared'),
             ];
 
@@ -179,9 +206,9 @@ class SavingController extends Controller
 
             // Send mail
             $users = $this->userService->getAllUser();
-            foreach ($users as $user) {
-                Mail::to($user->email)->send(new SavingTransferMail($sourceSaving, $targetSaving, $amount, $user->name));
-            }
+            // foreach ($users as $user) {
+            //     Mail::to($user->email)->send(new SavingTransferMail($sourceSaving, $targetSaving, $amount, $user->name));
+            // }
 
             return redirect()->route('savings.index')->with('success', 'Transfer successful.');
         } catch (Exception $e) {
@@ -190,5 +217,21 @@ class SavingController extends Controller
             // return back()->with('error', 'Something went wrong.');
             return back()->with('error', $e->getMessage());
         }
+    }
+
+    /**
+     * Mark saving as completed
+     */
+    public function markCompleted($id)
+    {
+        $saving = $this->service->findSaving($id);
+        if (empty($saving)) {
+            return back()->with('error', 'Saving not found.');
+        }
+
+        $user = Auth::user();
+        $this->service->markAsCompleted($saving, $user);
+
+        return back()->with('success', 'Saving marked as completed.');
     }
 }
