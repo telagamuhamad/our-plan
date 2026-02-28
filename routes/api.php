@@ -47,13 +47,13 @@ Route::get('/health', function () {
 })->name('health');
 
 // Public routes
-Route::post('/register', [AuthApiController::class, 'register']);
-Route::post('/login', [AuthApiController::class, 'login']);
+Route::post('/register', [AuthApiController::class, 'register'])->name('register');
+Route::post('/login', [AuthApiController::class, 'login'])->name('login');
 
 // Protected routes (require authentication)
 Route::middleware('auth:sanctum')->group(function () {
     // Auth
-    Route::post('/logout', [AuthApiController::class, 'logout']);
+    Route::post('/logout', [AuthApiController::class, 'logout'])->name('logout');
     Route::get('/user', function (Request $request) {
         return new UserResource($request->user());
     });
@@ -61,10 +61,10 @@ Route::middleware('auth:sanctum')->group(function () {
     // Profile Management
     Route::prefix('profile')->group(function () {
         Route::get('/', [ProfileApiController::class, 'show'])->name('profile.show');
-        Route::put('/', [ProfileApiController::class, 'update']);
-        Route::put('/password', [ProfileApiController::class, 'updatePassword']);
-        Route::post('/avatar', [ProfileApiController::class, 'updateAvatar']);
-        Route::post('/avatar/remove', [ProfileApiController::class, 'removeAvatar']);
+        Route::put('/', [ProfileApiController::class, 'update'])->name('profile.update');
+        Route::put('/password', [ProfileApiController::class, 'updatePassword'])->name('profile.password');
+        Route::post('/avatar', [ProfileApiController::class, 'updateAvatar'])->name('profile.avatar');
+        Route::post('/avatar/remove', [ProfileApiController::class, 'removeAvatar'])->name('profile.avatar.remove');
     });
 
     // Pairing Routes
