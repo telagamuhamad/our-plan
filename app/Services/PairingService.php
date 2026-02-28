@@ -37,11 +37,11 @@ class PairingService
      */
     public function joinCouple(string $inviteCode, User $user): Couple
     {
-        dd($inviteCode);
-        // Debug
         \Log::info('=== joinCouple DEBUG ===');
-        \Log::info('Invite code input: "' . $inviteCode . '"');
-        \Log::info('User ID: ' . $user->id . ', User couple_id: ' . ($user->couple_id ?? 'NULL'));
+        \Log::info('Input invite_code: "' . $inviteCode . '"');
+        \Log::info('Input length: ' . strlen($inviteCode));
+        \Log::info('Input hex: ' . bin2hex($inviteCode));
+        \Log::info('User ID: ' . $user->id);
 
         if ($user->couple_id) {
             throw new Exception('Anda sudah terhubung dengan pasangan.');
@@ -49,12 +49,13 @@ class PairingService
 
         $couple = $this->repository->findByInviteCode($inviteCode);
 
-        \Log::info('Couple found: ' . ($couple ? 'YES - ID: ' . $couple->id : 'NO'));
+        \Log::info('Couple found: ' . ($couple ? 'YES' : 'NO'));
+        if ($couple) {
+            \Log::info('Couple invite_code from DB: "' . $couple->invite_code . '"');
+            \Log::info('Match result: ' . var_export($couple->invite_code === $inviteCode, true));
+        }
 
         if (!$couple) {
-            // Log all couples for debugging
-            $allCouples = \DB::table('couples')->get(['id', 'invite_code', 'user_one_id', 'user_two_id']);
-            \Log::info('All couples in DB: ' . json_encode($allCouples));
             throw new Exception('Kode undangan tidak valid.');
         }
 
