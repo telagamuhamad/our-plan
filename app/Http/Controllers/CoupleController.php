@@ -39,7 +39,11 @@ class CoupleController extends Controller
     public function storeInviteCode(CreateInviteCodeRequest $request)
     {
         try {
-            $couple = $this->pairingService->createInviteCode(Auth::user());
+            $user = Auth::user();
+            $couple = $this->pairingService->createInviteCode($user);
+
+            // Refresh Auth user to get the updated couple_id
+            Auth::setUser($user->fresh());
 
             return redirect()->route('pairing.status')
                 ->with('success', 'Kode undangan berhasil dibuat.');
@@ -68,10 +72,14 @@ class CoupleController extends Controller
     public function join(JoinCoupleRequest $request)
     {
         try {
+            $user = Auth::user();
             $couple = $this->pairingService->joinCouple(
                 $request->invite_code,
-                Auth::user()
+                $user
             );
+
+            // Refresh Auth user to get the updated couple_id
+            Auth::setUser($user->fresh());
 
             return redirect()->route('pairing.status')
                 ->with('success', 'Berhasil bergabung! Tunggu konfirmasi dari pasangan.');
