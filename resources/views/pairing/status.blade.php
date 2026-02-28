@@ -70,6 +70,7 @@
                         @if($coupleInfo['is_user_one'])
                             <!-- User One View -->
                             <p class="mb-3 fw-semibold">Bagikan kode ini ke pasangan Anda:</p>
+                            {{ $coupleInfo['invite_code'] }}
                             <div class="alert alert-info text-center" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none;">
                                 <span class="fs-2 fw-bold" style="letter-spacing: 0.3rem;">{{ $coupleInfo['invite_code'] }}</span>
                             </div>

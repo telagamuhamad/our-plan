@@ -38,7 +38,6 @@ class CoupleController extends Controller
      */
     public function storeInviteCode(CreateInviteCodeRequest $request)
     {
-        dd(Auth::user());
         try {
             $couple = $this->pairingService->createInviteCode(Auth::user());
 
