@@ -37,13 +37,23 @@ class PairingService
      */
     public function joinCouple(string $inviteCode, User $user): Couple
     {
+        // Debug
+        \Log::info('=== joinCouple DEBUG ===');
+        \Log::info('Invite code input: "' . $inviteCode . '"');
+        \Log::info('User ID: ' . $user->id . ', User couple_id: ' . ($user->couple_id ?? 'NULL'));
+
         if ($user->couple_id) {
             throw new Exception('Anda sudah terhubung dengan pasangan.');
         }
 
         $couple = $this->repository->findByInviteCode($inviteCode);
 
+        \Log::info('Couple found: ' . ($couple ? 'YES - ID: ' . $couple->id : 'NO'));
+
         if (!$couple) {
+            // Log all couples for debugging
+            $allCouples = \DB::table('couples')->get(['id', 'invite_code', 'user_one_id', 'user_two_id']);
+            \Log::info('All couples in DB: ' . json_encode($allCouples));
             throw new Exception('Kode undangan tidak valid.');
         }
 
@@ -51,7 +61,7 @@ class PairingService
             throw new Exception('Kode undangan ini sudah digunakan.');
         }
 
-        if ($couple->user_one_id === $user->id) {
+        if ((int)$couple->user_one_id === (int)$user->id) {
             throw new Exception('Anda tidak bisa bergabung dengan undangan sendiri.');
         }
 
