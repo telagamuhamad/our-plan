@@ -53,7 +53,7 @@ Route::post('/login', [AuthApiController::class, 'login']);
 // Protected routes (require authentication)
 Route::middleware('auth:sanctum')->group(function () {
     // Auth
-    Route::post('/logout', [AuthApiController::class, 'logout'])->name('logout');
+    Route::post('/logout', [AuthApiController::class, 'logout']);
     Route::get('/user', function (Request $request) {
         return new UserResource($request->user());
     });
