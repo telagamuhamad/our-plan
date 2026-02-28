@@ -103,7 +103,7 @@ class PairingService
     public function getCoupleInfo(User $user): ?array
     {
         $couple = $this->repository->findByUserWithUsers($user);
-
+dd($couple);
         if (!$couple) {
             return null;
         }

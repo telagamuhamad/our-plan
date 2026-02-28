@@ -95,7 +95,7 @@ class CoupleController extends Controller
         }
 
         $coupleInfo = $this->pairingService->getCoupleInfo($user);
-dd($coupleInfo);
+
         return view('pairing.status', [
             'user' => $user,
             'coupleInfo' => $coupleInfo,
