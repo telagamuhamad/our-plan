@@ -1,0 +1,10 @@
+---
+deployment:
+  tasks:
+    - export DEPLOYPATH=/home/ourplan1/laravel
+    - /bin/bash -c "cd $DEPLOYPATH && composer install --optimize-autoloader --no-dev"
+    - /bin/bash -c "cd $DEPLOYPATH && php artisan migrate --force"
+    - /bin/bash -c "cd $DEPLOYPATH && php artisan config:cache"
+    - /bin/bash -c "cd $DEPLOYPATH && php artisan route:cache"
+    - /bin/bash -c "cd $DEPLOYPATH && php artisan view:cache"
+    - /bin/bash -c "chmod -R 775 $DEPLOYPATH/storage $DEPLOYPATH/bootstrap/cache"
