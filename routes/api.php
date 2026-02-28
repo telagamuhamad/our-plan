@@ -62,9 +62,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('profile')->group(function () {
         Route::get('/', [ProfileApiController::class, 'show'])->name('profile.show');
         Route::put('/', [ProfileApiController::class, 'update']);
-        Route::put('/password', [ProfileApiController::class, 'updatePassword'])->name('profile.password');
-        Route::post('/avatar', [ProfileApiController::class, 'updateAvatar'])->name('profile.avatar');
-        Route::post('/avatar/remove', [ProfileApiController::class, 'removeAvatar'])->name('profile.avatar.remove');
+        Route::put('/password', [ProfileApiController::class, 'updatePassword']);
+        Route::post('/avatar', [ProfileApiController::class, 'updateAvatar']);
+        Route::post('/avatar/remove', [ProfileApiController::class, 'removeAvatar']);
     });
 
     // Pairing Routes
