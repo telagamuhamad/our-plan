@@ -37,6 +37,7 @@ class PairingService
      */
     public function joinCouple(string $inviteCode, User $user): Couple
     {
+        dd($inviteCode);
         // Debug
         \Log::info('=== joinCouple DEBUG ===');
         \Log::info('Invite code input: "' . $inviteCode . '"');
