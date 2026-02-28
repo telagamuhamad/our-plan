@@ -67,10 +67,10 @@
 
                 <div class="card border-0 shadow-sm mb-4">
                     <div class="card-body p-4">
-                        <p>couple: {{ $coupleInfo['id'] }}</p>
+                        {{-- <p>couple: {{ $coupleInfo['id'] }}</p>
                         <p>status: {{ $coupleInfo['status'] }}</p>
                         <p>is_user_one: {{ $coupleInfo['is_user_one'] }}</p>
-                        <p>invite_code: {{ $coupleInfo['invite_code'] }}</p>
+                        <p>invite_code: {{ $coupleInfo['invite_code'] }}</p> --}}
                         @if($coupleInfo['is_user_one'])
                             <!-- User One View -->
                             <p class="mb-3 fw-semibold">Bagikan kode ini ke pasangan Anda:</p>
