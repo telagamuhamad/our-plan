@@ -15,7 +15,7 @@
         'profile.*' => 'bg-meetings.jpg',
     ];
 
-    $bgImage = 'default.jpg'; // fallback default
+    $bgImage = 'default.jpg';
     foreach ($backgrounds as $pattern => $image) {
         if (Str::is($pattern, $routeName)) {
             $bgImage = $image;
