@@ -42,8 +42,8 @@ class CoupleController extends Controller
             $user = Auth::user();
             $couple = $this->pairingService->createInviteCode($user);
 
-            // Refresh Auth user to get the updated couple_id
-            Auth::setUser($user->fresh());
+            // Re-login user to update session with fresh data
+            Auth::login($user->fresh());
 
             return redirect()->route('pairing.status')
                 ->with('success', 'Kode undangan berhasil dibuat.');
@@ -78,8 +78,8 @@ class CoupleController extends Controller
                 $user
             );
 
-            // Refresh Auth user to get the updated couple_id
-            Auth::setUser($user->fresh());
+            // Re-login user to update session with fresh data
+            Auth::login($user->fresh());
 
             return redirect()->route('pairing.status')
                 ->with('success', 'Berhasil bergabung! Tunggu konfirmasi dari pasangan.');
@@ -97,12 +97,25 @@ class CoupleController extends Controller
     {
         $user = Auth::user();
 
+        // Debug logging
+        \Log::info('=== showStatus DEBUG ===');
+        \Log::info('User ID: ' . $user->id);
+        \Log::info('User couple_id: ' . ($user->couple_id ?? 'NULL'));
+        \Log::info('Session ID: ' . session()->getId());
+
         // If user has active couple, redirect to dashboard
         if ($user->hasActiveCouple()) {
             return redirect()->route('dashboard');
         }
 
         $coupleInfo = $this->pairingService->getCoupleInfo($user);
+
+        \Log::info('coupleInfo result: ' . ($coupleInfo ? 'FOUND' : 'NULL'));
+        if ($coupleInfo) {
+            \Log::info('coupleInfo data: ' . json_encode($coupleInfo));
+        }
+
+        \Log::info('=== END DEBUG ===');
 
         return view('pairing.status', [
             'user' => $user,
