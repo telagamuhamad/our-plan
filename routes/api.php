@@ -48,7 +48,7 @@ Route::get('/health', function () {
 
 // Public routes
 Route::post('/register', [AuthApiController::class, 'register'])->name('register');
-Route::post('/login', [AuthApiController::class, 'login'])->name('login');
+Route::post('/login', [AuthApiController::class, 'login']);
 
 // Protected routes (require authentication)
 Route::middleware('auth:sanctum')->group(function () {
