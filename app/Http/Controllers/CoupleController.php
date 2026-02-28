@@ -72,11 +72,6 @@ class CoupleController extends Controller
     public function join(JoinCoupleRequest $request)
     {
         try {
-            // Debug log
-            \Log::info('=== Controller join DEBUG ===');
-            \Log::info('Request invite_code: "' . $request->invite_code . '"');
-            \Log::info('Request input: ' . json_encode($request->input()));
-
             $user = Auth::user();
             $couple = $this->pairingService->joinCouple(
                 $request->invite_code,
@@ -89,7 +84,6 @@ class CoupleController extends Controller
             return redirect()->route('pairing.status')
                 ->with('success', 'Berhasil bergabung! Tunggu konfirmasi dari pasangan.');
         } catch (Exception $e) {
-            \Log::error('Join exception: ' . $e->getMessage());
             return back()
                 ->with('error', $e->getMessage())
                 ->withInput();
@@ -101,7 +95,11 @@ class CoupleController extends Controller
      */
     public function showStatus()
     {
-        $user = Auth::user();
+        // Load fresh user from DB to get latest couple_id
+        $user = Auth::user()->fresh();
+
+        // Update Auth session with fresh data
+        Auth::setUser($user);
 
         // If user has active couple, redirect to dashboard
         if ($user->hasActiveCouple()) {

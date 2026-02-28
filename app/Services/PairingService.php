@@ -37,23 +37,11 @@ class PairingService
      */
     public function joinCouple(string $inviteCode, User $user): Couple
     {
-        \Log::info('=== joinCouple DEBUG ===');
-        \Log::info('Input invite_code: "' . $inviteCode . '"');
-        \Log::info('Input length: ' . strlen($inviteCode));
-        \Log::info('Input hex: ' . bin2hex($inviteCode));
-        \Log::info('User ID: ' . $user->id);
-
         if ($user->couple_id) {
             throw new Exception('Anda sudah terhubung dengan pasangan.');
         }
 
         $couple = $this->repository->findByInviteCode($inviteCode);
-
-        \Log::info('Couple found: ' . ($couple ? 'YES' : 'NO'));
-        if ($couple) {
-            \Log::info('Couple invite_code from DB: "' . $couple->invite_code . '"');
-            \Log::info('Match result: ' . var_export($couple->invite_code === $inviteCode, true));
-        }
 
         if (!$couple) {
             throw new Exception('Kode undangan tidak valid.');

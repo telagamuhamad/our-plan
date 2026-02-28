@@ -214,7 +214,9 @@
             @auth
                 @php
                     $routeName = Route::currentRouteName();
-                    $userHasActiveCouple = Auth::user()->hasActiveCouple();
+                    // Check directly from DB for accurate status
+                    $freshUser = \App\Models\User::find(Auth::id());
+                    $userHasActiveCouple = $freshUser && $freshUser->couple_id !== null;
                 @endphp
 
                 <div class="d-flex flex-wrap gap-2 align-items-center ms-auto">
